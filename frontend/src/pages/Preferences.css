@@ -1,0 +1,211 @@
+
+.preferences-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px;
+    color: #1e293b;
+}
+
+.preferences-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.preferences-header h1 {
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+.preferences-header p {
+    color: #64748b;
+}
+
+.preferences-icon {
+    width: 65px;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ede9fe;
+    color: #7c3aed;
+    border-radius: 16px;
+}
+
+.preferences-form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.preference-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.preference-card-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 25px;
+    color: #7c3aed;
+}
+
+.preference-card-title h2 {
+    font-size: 19px;
+    color: #1e293b;
+    margin-bottom: 5px;
+}
+
+.preference-card-title p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.preference-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.preference-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.preference-field label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.preference-field input,
+.preference-field select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    font-size: 14px;
+    outline: none;
+    background: #ffffff;
+}
+
+.preference-field input:focus,
+.preference-field select:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.study-days-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.study-day-option {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.study-day-option.selected {
+    background: #f3e8ff;
+    border-color: #a78bfa;
+    color: #6d28d9;
+    font-weight: 600;
+}
+
+.study-day-option input {
+    accent-color: #7c3aed;
+}
+
+.save-preferences-btn {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 24px;
+    border: none;
+    border-radius: 10px;
+    background: #7c3aed;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.save-preferences-btn:hover {
+    background: #6d28d9;
+}
+
+.save-preferences-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.preferences-error,
+.preferences-success {
+    padding: 13px 16px;
+    border-radius: 9px;
+    font-size: 14px;
+}
+
+.preferences-error {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.preferences-success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.preferences-loading {
+    padding: 50px;
+    text-align: center;
+    color: #64748b;
+}
+
+@media (max-width: 768px) {
+    .preferences-page {
+        padding: 18px;
+    }
+
+    .preference-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .study-days-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .preferences-header h1 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .preference-card {
+        padding: 18px;
+    }
+
+    .preferences-icon {
+        width: 48px;
+        height: 48px;
+    }
+
+    .study-days-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
