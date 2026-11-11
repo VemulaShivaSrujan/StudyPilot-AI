@@ -9,6 +9,7 @@ import topicRoutes from './routes/topicRoutes.js';
 import pdfRoutes from './routes/pdfRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import preferenceRoutes from './routes/preferenceRoutes.js';
+import timetableRoutes from './routes/timetableRoutes.js';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use('/api/topics', topicRoutes);
 app.use('/api/pdf', pdfRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/preferences', preferenceRoutes);
+app.use('/api/timetable', timetableRoutes);
 
 app.get('/', (req, res) => {
     res.status(200).json({

@@ -23,10 +23,8 @@ import Exams from './pages/Exams';
 import Subjects from './pages/Subjects';
 import Topics from './pages/Topics';
 import Preferences from './pages/Preferences';
+import Timetable from './pages/Timetable';
 
-function Timetable() {
-    return <h1>My Timetable</h1>;
-}
 
 function AIAssistant() {
     return <h1>AI Study Assistant</h1>;

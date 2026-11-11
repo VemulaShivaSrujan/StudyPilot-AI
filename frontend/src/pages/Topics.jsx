@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import {
     Plus,
@@ -16,7 +16,8 @@ import {
     Sparkles,
     FileText,
     Save,
-    Settings
+    Settings,
+    CalendarDays
 } from 'lucide-react';
 
 import api from '../services/api';
@@ -60,6 +61,7 @@ const Topics = () => {
     ];
 
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const subjectId = searchParams.get('subjectId');
 
     // Topic states
@@ -76,6 +78,7 @@ const Topics = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [saving, setSaving] = useState(false);
+    const [generatingTimetable, setGeneratingTimetable] = useState(false);
 
     const token = localStorage.getItem('token');
 
@@ -427,6 +430,36 @@ const Topics = () => {
             );
         } finally {
             setSaving(false);
+        }
+    };
+
+    // Generate one combined timetable for all upcoming exams
+    const handleGenerateTimetable = async () => {
+        try {
+            setGeneratingTimetable(true);
+            setError('');
+            setSuccess('');
+
+            const response = await api.post(
+                '/timetable/generate',
+                {},
+                config
+            );
+
+            if (response.data.success) {
+                navigate('/timetable');
+            } else {
+                setError(
+                    response.data.message || 'Failed to generate timetable.'
+                );
+            }
+        } catch (error) {
+            setError(
+                error.response?.data?.message ||
+                'Failed to generate combined timetable.'
+            );
+        } finally {
+            setGeneratingTimetable(false);
         }
     };
 
@@ -1042,6 +1075,31 @@ const Topics = () => {
 
             </div>
 
+            {/* Combined Timetable */}
+            <div className="generate-timetable-section">
+                <button
+                    type="button"
+                    className="generate-timetable-btn"
+                    onClick={handleGenerateTimetable}
+                    disabled={generatingTimetable || saving}
+                >
+                    {generatingTimetable ? (
+                        <>
+                            <Loader2 className="spin" size={18} />
+                            Generating Combined Timetable...
+                        </>
+                    ) : (
+                        <>
+                            <CalendarDays size={18} />
+                            Generate Combined Timetable
+                        </>
+                    )}
+                </button>
+
+                <p>
+                    Create one conflict-free study schedule for all your upcoming examinations.
+                </p>
+            </div>
         </div>
     );
 };

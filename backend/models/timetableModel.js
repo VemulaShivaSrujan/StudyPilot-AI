@@ -2,22 +2,21 @@
 import { getDB } from '../config/db.js';
 import { ObjectId } from 'mongodb';
 
-const TIMETABLES_COLLECTION = 'timetables';
+const TIMETABLES_COLLECTION = 'combined_timetables';
 
 export const getTimetablesCollection = () => {
     return getDB().collection(TIMETABLES_COLLECTION);
 };
 
-// Find a timetable for a particular student and examination
-export const findTimetableByExam = async (studentId, examId) => {
+// Find the combined timetable for a student
+export const findTimetableByStudentId = async (studentId) => {
     return getTimetablesCollection().findOne({
-        studentId: new ObjectId(studentId),
-        examId: new ObjectId(examId)
+        studentId: new ObjectId(studentId)
     });
 };
 
-// Save a new timetable or replace the existing timetable for this exam
-export const saveTimetable = async (studentId, examId, sessions) => {
+// Save or replace the student's combined timetable
+export const saveTimetable = async (studentId, sessions) => {
     const now = new Date();
 
     const timetableSessions = sessions.map((session) => ({
@@ -28,8 +27,7 @@ export const saveTimetable = async (studentId, examId, sessions) => {
 
     return getTimetablesCollection().updateOne(
         {
-            studentId: new ObjectId(studentId),
-            examId: new ObjectId(examId)
+            studentId: new ObjectId(studentId)
         },
         {
             $set: {
@@ -39,7 +37,6 @@ export const saveTimetable = async (studentId, examId, sessions) => {
             },
             $setOnInsert: {
                 studentId: new ObjectId(studentId),
-                examId: new ObjectId(examId),
                 createdAt: now
             }
         },
@@ -49,17 +46,15 @@ export const saveTimetable = async (studentId, examId, sessions) => {
     );
 };
 
-// Update the completion status of a timetable session
+// Update a session's completion status
 export const updateSessionCompletion = async (
     studentId,
-    examId,
     sessionId,
     completed
 ) => {
     return getTimetablesCollection().updateOne(
         {
             studentId: new ObjectId(studentId),
-            examId: new ObjectId(examId),
             'sessions.sessionId': new ObjectId(sessionId)
         },
         {
@@ -71,10 +66,9 @@ export const updateSessionCompletion = async (
     );
 };
 
-// Delete a timetable for a particular examination
-export const deleteTimetable = async (studentId, examId) => {
+// Delete the student's combined timetable
+export const deleteTimetable = async (studentId) => {
     return getTimetablesCollection().deleteOne({
-        studentId: new ObjectId(studentId),
-        examId: new ObjectId(examId)
+        studentId: new ObjectId(studentId)
     });
 };
