@@ -1,6 +1,7 @@
 
 import { extractPDFText } from '../services/pdfService.js';
 import { generateTopicsFromText } from '../services/geminiService.js';
+import { saveStudyMaterial } from '../models/studyMaterialModel.js';
 
 import { ObjectId } from 'mongodb';
 import { getDB } from '../config/db.js';
@@ -43,8 +44,17 @@ export const generateTopicsFromPDF = async (req, res) => {
         // Extract PDF text
         const pdfData = await extractPDFText(req.file.buffer);
 
-        // Generate topics using Gemini
+        // Generate topics using Gemini (existing functionality)
         const topics = await generateTopicsFromText(pdfData.text);
+
+        // Save extracted PDF content for future topic tests
+        await saveStudyMaterial({
+            subjectId,
+            studentId: req.studentId,
+            extractedText: pdfData.text,
+            pages: pdfData.pages,
+            fileName: req.file.originalname
+        });
 
         // Return topics for student review
         return res.status(200).json({

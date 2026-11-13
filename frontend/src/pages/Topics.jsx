@@ -17,21 +17,23 @@ import {
     FileText,
     Save,
     Settings,
-    CalendarDays
+    CalendarDays,
+    Award,
+    History,
+    AlertCircle
 } from 'lucide-react';
 
 import api from '../services/api';
 import './Topics.css';
 
 const Topics = () => {
-
     // AI topic states
     const [pdfFile, setPdfFile] = useState(null);
     const [generatedTopics, setGeneratedTopics] = useState([]);
     const [generatingTopics, setGeneratingTopics] = useState(false);
     const [selectedGeneratedTopics, setSelectedGeneratedTopics] = useState([]);
 
-    // Study preferences states
+    // Study preferences
     const [showPreferences, setShowPreferences] = useState(false);
 
     const [preferences, setPreferences] = useState({
@@ -74,11 +76,25 @@ const Topics = () => {
     const [description, setDescription] = useState('');
     const [estimatedTime, setEstimatedTime] = useState('');
 
-    // Message and saving states
+    // General messages and loading states
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [saving, setSaving] = useState(false);
     const [generatingTimetable, setGeneratingTimetable] = useState(false);
+
+    // AI Topic Test states
+    const [activeTest, setActiveTest] = useState(null);
+    const [testAnswers, setTestAnswers] = useState([]);
+    const [testTimeLeft, setTestTimeLeft] = useState(0);
+
+    const [generatingTest, setGeneratingTest] = useState(false);
+    const [submittingTest, setSubmittingTest] = useState(false);
+    const [autoSubmitAttempted, setAutoSubmitAttempted] = useState(false);
+
+    const [testResult, setTestResult] = useState(null);
+    const [testHistory, setTestHistory] = useState([]);
+    const [showTestHistory, setShowTestHistory] = useState(false);
+    const [historyTopicName, setHistoryTopicName] = useState('');
 
     const token = localStorage.getItem('token');
 
@@ -88,7 +104,10 @@ const Topics = () => {
         }
     };
 
-    // Update preference fields
+    // -----------------------------------------
+    // STUDY PREFERENCES
+    // -----------------------------------------
+
     const handlePreferenceChange = (e) => {
         const { name, value } = e.target;
 
@@ -98,7 +117,6 @@ const Topics = () => {
         }));
     };
 
-    // Select or deselect study days
     const handleStudyDayChange = (day) => {
         setPreferences(prev => ({
             ...prev,
@@ -108,7 +126,6 @@ const Topics = () => {
         }));
     };
 
-    // Load saved preferences
     const fetchPreferences = async () => {
         try {
             const response = await api.get('/preferences', config);
@@ -117,7 +134,8 @@ const Topics = () => {
                 setPreferences(prev => ({
                     ...prev,
                     ...response.data.preferences,
-                    studyDays: response.data.preferences.studyDays || prev.studyDays
+                    studyDays:
+                        response.data.preferences.studyDays || prev.studyDays
                 }));
             }
         } catch (error) {
@@ -128,7 +146,6 @@ const Topics = () => {
         }
     };
 
-    // Save preferences
     const handleSavePreferences = async () => {
         try {
             setSaving(true);
@@ -149,7 +166,6 @@ const Topics = () => {
             if (response.data.success) {
                 setSuccess('Study preferences saved successfully!');
             }
-
         } catch (error) {
             setError(
                 error.response?.data?.message ||
@@ -160,8 +176,13 @@ const Topics = () => {
         }
     };
 
-    // Fetch existing topics
+    // -----------------------------------------
+    // TOPICS
+    // -----------------------------------------
+
     const fetchTopics = async () => {
+        if (!subjectId) return;
+
         try {
             setLoading(true);
 
@@ -173,7 +194,6 @@ const Topics = () => {
             if (response.data.success) {
                 setTopics(response.data.topics);
             }
-
         } catch (error) {
             setError(
                 error.response?.data?.message ||
@@ -184,7 +204,6 @@ const Topics = () => {
         }
     };
 
-    // Load topics
     useEffect(() => {
         if (!subjectId) {
             setError('Please select a subject first.');
@@ -195,12 +214,10 @@ const Topics = () => {
         fetchTopics();
     }, [subjectId]);
 
-    // Load saved preferences
     useEffect(() => {
         fetchPreferences();
     }, []);
 
-    // Reset manual topic form
     const resetForm = () => {
         setTopicName('');
         setDescription('');
@@ -210,7 +227,6 @@ const Topics = () => {
         setError('');
     };
 
-    // Add or edit manual topic
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -238,16 +254,13 @@ const Topics = () => {
                 );
 
                 setSuccess('Topic updated successfully!');
-
             } else {
                 await api.post('/topics', topicData, config);
-
                 setSuccess('Topic added successfully!');
             }
 
             resetForm();
             await fetchTopics();
-
         } catch (error) {
             setError(
                 error.response?.data?.message ||
@@ -258,7 +271,6 @@ const Topics = () => {
         }
     };
 
-    // Edit topic
     const handleEdit = (topic) => {
         setEditingTopic(topic);
         setTopicName(topic.topicName);
@@ -270,7 +282,6 @@ const Topics = () => {
         setSuccess('');
     };
 
-    // Delete topic
     const handleDelete = async (topicId) => {
         if (!window.confirm('Are you sure you want to delete this topic?')) {
             return;
@@ -281,7 +292,6 @@ const Topics = () => {
 
             setSuccess('Topic deleted successfully!');
             await fetchTopics();
-
         } catch (error) {
             setError(
                 error.response?.data?.message ||
@@ -290,7 +300,6 @@ const Topics = () => {
         }
     };
 
-    // Mark topic completed or incomplete
     const handleToggleComplete = async (topic) => {
         try {
             await api.put(
@@ -302,7 +311,6 @@ const Topics = () => {
             );
 
             await fetchTopics();
-
         } catch (error) {
             setError(
                 error.response?.data?.message ||
@@ -311,9 +319,11 @@ const Topics = () => {
         }
     };
 
-    // Generate topics using Gemini AI
-    const handleGenerateTopics = async () => {
+    // -----------------------------------------
+    // AI PDF TOPIC GENERATION
+    // -----------------------------------------
 
+    const handleGenerateTopics = async () => {
         if (!pdfFile) {
             setError('Please select a PDF file first.');
             return;
@@ -321,6 +331,11 @@ const Topics = () => {
 
         if (!subjectId) {
             setError('Subject ID is missing.');
+            return;
+        }
+
+        if (pdfFile.size > 10 * 1024 * 1024) {
+            setError('PDF file must be smaller than 10 MB.');
             return;
         }
 
@@ -359,10 +374,9 @@ const Topics = () => {
                     `${response.data.count} topics generated successfully!`
                 );
             }
-
         } catch (error) {
-            console.log('AI generation error:', error);
-            console.log('Backend response:', error.response?.data);
+            console.error('AI generation error:', error);
+            console.error('Backend response:', error.response?.data);
 
             setError(
                 error.response?.data?.message ||
@@ -373,7 +387,6 @@ const Topics = () => {
         }
     };
 
-    // Select or deselect an AI topic
     const handleSelectGeneratedTopic = (index) => {
         setSelectedGeneratedTopics(prev => {
             if (prev.includes(index)) {
@@ -384,7 +397,6 @@ const Topics = () => {
         });
     };
 
-    // Save selected AI-generated topics
     const handleSaveGeneratedTopics = async () => {
         if (selectedGeneratedTopics.length === 0) {
             setError('Please select at least one topic to save.');
@@ -421,8 +433,13 @@ const Topics = () => {
             setSelectedGeneratedTopics([]);
             setPdfFile(null);
 
-            await fetchTopics();
+            const pdfInput = document.getElementById('topic-pdf');
 
+            if (pdfInput) {
+                pdfInput.value = '';
+            }
+
+            await fetchTopics();
         } catch (error) {
             setError(
                 error.response?.data?.message ||
@@ -433,7 +450,187 @@ const Topics = () => {
         }
     };
 
-    // Generate one combined timetable for all upcoming exams
+    // -----------------------------------------
+    // AI TOPIC TEST
+    // -----------------------------------------
+
+    const handleGenerateTest = async (topic) => {
+        try {
+            setGeneratingTest(true);
+            setError('');
+            setTestResult(null);
+            setTestHistory([]);
+            setShowTestHistory(false);
+            setAutoSubmitAttempted(false);
+
+            const response = await api.post(
+                `/topic-tests/generate/${topic.id}`,
+                {},
+                config
+            );
+
+            const test = response.data;
+
+            setActiveTest(test);
+
+            setTestAnswers(
+                new Array(test.totalQuestions).fill(null)
+            );
+
+            setTestTimeLeft(test.duration * 60);
+        } catch (error) {
+            console.error('Generate test error:', error);
+
+            alert(
+                error.response?.data?.message ||
+                'Failed to generate the test.'
+            );
+        } finally {
+            setGeneratingTest(false);
+        }
+    };
+
+    const handleAnswerSelect = (questionIndex, answerIndex) => {
+        if (!activeTest || testTimeLeft <= 0 || submittingTest) {
+            return;
+        }
+
+        setTestAnswers(previousAnswers => {
+            const updatedAnswers = [...previousAnswers];
+            updatedAnswers[questionIndex] = answerIndex;
+            return updatedAnswers;
+        });
+    };
+
+    const handleSubmitTest = async (autoSubmit = false) => {
+        if (!activeTest || submittingTest) return;
+
+        if (
+            !autoSubmit &&
+            testAnswers.some(answer => answer === null)
+        ) {
+            alert('Please answer all questions before submitting.');
+            return;
+        }
+
+        try {
+            setSubmittingTest(true);
+
+            const answersToSubmit = testAnswers.map(
+                answer => answer === null ? -1 : answer
+            );
+
+            const response = await api.post(
+                `/topic-tests/submit/${activeTest.testId}`,
+                {
+                    answers: answersToSubmit
+                },
+                config
+            );
+
+            setTestResult({
+                ...response.data.result,
+                topicName: activeTest.topicName
+            });
+
+            setActiveTest(null);
+            setTestTimeLeft(0);
+            setTestAnswers([]);
+
+            await fetchTopics();
+
+        } catch (error) {
+            console.error('Submit test error:', error);
+
+            alert(
+                error.response?.data?.message ||
+                'Failed to submit the test.'
+            );
+        } finally {
+            setSubmittingTest(false);
+        }
+    };
+
+    const handleGetTestHistory = async (topic) => {
+        try {
+            const response = await api.get(
+                `/topic-tests/history/${topic.id}`,
+                config
+            );
+
+            setTestHistory(response.data.tests || []);
+            setHistoryTopicName(topic.topicName);
+            setShowTestHistory(true);
+        } catch (error) {
+            console.error('Test history error:', error);
+
+            alert(
+                error.response?.data?.message ||
+                'Failed to load test history.'
+            );
+        }
+    };
+
+    const handleCloseTest = () => {
+        if (
+            activeTest &&
+            !window.confirm(
+                'Are you sure you want to close this test? Your answers will be lost.'
+            )
+        ) {
+            return;
+        }
+
+        setActiveTest(null);
+        setTestAnswers([]);
+        setTestTimeLeft(0);
+        setAutoSubmitAttempted(false);
+    };
+
+    const closeResultModal = () => {
+        setTestResult(null);
+    };
+
+    // Countdown timer and automatic submission
+    useEffect(() => {
+        if (!activeTest || submittingTest) {
+            return;
+        }
+
+        if (testTimeLeft <= 0) {
+            if (!autoSubmitAttempted) {
+                setAutoSubmitAttempted(true);
+                handleSubmitTest(true);
+            }
+
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            setTestTimeLeft(previousTime => previousTime - 1);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [
+        activeTest,
+        testTimeLeft,
+        submittingTest,
+        autoSubmitAttempted
+    ]);
+
+    const formatTestTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+
+        return `${String(minutes).padStart(2, '0')}:${String(
+            remainingSeconds
+        ).padStart(2, '0')}`;
+    };
+
+    // -----------------------------------------
+    // COMBINED TIMETABLE
+    // -----------------------------------------
+
     const handleGenerateTimetable = async () => {
         try {
             setGeneratingTimetable(true);
@@ -450,7 +647,8 @@ const Topics = () => {
                 navigate('/timetable');
             } else {
                 setError(
-                    response.data.message || 'Failed to generate timetable.'
+                    response.data.message ||
+                    'Failed to generate timetable.'
                 );
             }
         } catch (error) {
@@ -463,9 +661,16 @@ const Topics = () => {
         }
     };
 
-    // Topic progress
+    // -----------------------------------------
+    // PROGRESS
+    // -----------------------------------------
+
     const completedTopics = topics.filter(
         topic => topic.completed
+    ).length;
+
+    const masteredTopics = topics.filter(
+        topic => topic.mastered
     ).length;
 
     const progress = topics.length > 0
@@ -480,6 +685,10 @@ const Topics = () => {
             </div>
         );
     }
+
+    // -----------------------------------------
+    // PAGE UI
+    // -----------------------------------------
 
     return (
         <div className="topics-page">
@@ -524,7 +733,6 @@ const Topics = () => {
 
             {/* AI PDF Upload */}
             <div className="ai-topic-card">
-
                 <div className="ai-topic-heading">
                     <div className="ai-topic-icon">
                         <Sparkles size={25} />
@@ -540,7 +748,6 @@ const Topics = () => {
                 </div>
 
                 <div className="ai-upload-area">
-
                     <FileText size={35} />
 
                     <h3>Upload Your Study Material</h3>
@@ -557,6 +764,12 @@ const Topics = () => {
                             const file = e.target.files?.[0];
 
                             if (file) {
+                                if (file.size > 10 * 1024 * 1024) {
+                                    setError('PDF file must be smaller than 10 MB.');
+                                    e.target.value = '';
+                                    return;
+                                }
+
                                 setPdfFile(file);
                                 setError('');
                                 setGeneratedTopics([]);
@@ -579,7 +792,10 @@ const Topics = () => {
                                 type="button"
                                 onClick={() => {
                                     setPdfFile(null);
-                                    document.getElementById('topic-pdf').value = '';
+
+                                    const input = document.getElementById('topic-pdf');
+
+                                    if (input) input.value = '';
                                 }}
                                 title="Remove PDF"
                             >
@@ -587,7 +803,6 @@ const Topics = () => {
                             </button>
                         </div>
                     )}
-
                 </div>
 
                 <button
@@ -607,14 +822,11 @@ const Topics = () => {
                         </>
                     )}
                 </button>
-
             </div>
 
             {/* AI Generated Topics Preview */}
             {generatedTopics.length > 0 && (
-
                 <div className="generated-topics-card">
-
                     <div className="generated-topics-header">
                         <div>
                             <h2>
@@ -633,9 +845,7 @@ const Topics = () => {
                     </div>
 
                     <div className="generated-topics-list">
-
                         {generatedTopics.map((topic, index) => (
-
                             <div
                                 className={`generated-topic-item ${
                                     selectedGeneratedTopics.includes(index)
@@ -644,9 +854,7 @@ const Topics = () => {
                                 }`}
                                 key={index}
                             >
-
                                 <label className="generated-topic-checkbox">
-
                                     <input
                                         type="checkbox"
                                         checked={selectedGeneratedTopics.includes(index)}
@@ -658,11 +866,9 @@ const Topics = () => {
                                             <CheckCircle2 size={18} />
                                         )}
                                     </span>
-
                                 </label>
 
                                 <div className="generated-topic-info">
-
                                     <h3>
                                         {index + 1}. {topic.topicName}
                                     </h3>
@@ -673,17 +879,12 @@ const Topics = () => {
                                         <Clock size={14} />
                                         {topic.estimatedTime} minutes
                                     </span>
-
                                 </div>
-
                             </div>
-
                         ))}
-
                     </div>
 
                     <div className="generated-topics-actions">
-
                         <button
                             className="select-all-btn"
                             onClick={() => {
@@ -720,22 +921,22 @@ const Topics = () => {
                                 </>
                             )}
                         </button>
-
                     </div>
-
                 </div>
-
             )}
 
-            {/* Progress */}
+            {/* Topic Progress */}
             <div className="topic-progress-card">
-
                 <div className="topic-progress-top">
                     <div>
                         <h3>Topic Progress</h3>
 
                         <p>
-                            {completedTopics} of {topics.length} topics completed
+                            {completedTopics} of {topics.length} topics studied
+                        </p>
+
+                        <p>
+                            {masteredTopics} topics mastered through tests
                         </p>
                     </div>
 
@@ -745,14 +946,11 @@ const Topics = () => {
                 <div className="topic-progress-bar">
                     <div style={{ width: `${progress}%` }} />
                 </div>
-
             </div>
 
             {/* Manual Topic Form */}
             {showForm && (
-
                 <div className="topic-form-card">
-
                     <div className="topic-form-header">
                         <h2>
                             {editingTopic ? 'Edit Topic' : 'Add New Topic'}
@@ -764,7 +962,6 @@ const Topics = () => {
                     </div>
 
                     <form onSubmit={handleSubmit}>
-
                         <div className="topic-form-group">
                             <label>Topic Name *</label>
 
@@ -801,7 +998,6 @@ const Topics = () => {
                         </div>
 
                         <div className="topic-form-actions">
-
                             <button
                                 type="button"
                                 className="cancel-topic-btn"
@@ -821,27 +1017,20 @@ const Topics = () => {
                                         ? 'Update Topic'
                                         : 'Save Topic'}
                             </button>
-
                         </div>
-
                     </form>
-
                 </div>
-
             )}
 
             {/* All Topics */}
             <div className="topics-section">
-
                 <div className="topics-section-header">
                     <h2>All Topics</h2>
                     <span>{topics.length} Topics</span>
                 </div>
 
                 {topics.length === 0 ? (
-
                     <div className="empty-topics">
-
                         <BookOpen size={45} />
 
                         <h3>No Topics Yet</h3>
@@ -854,22 +1043,16 @@ const Topics = () => {
                             <Plus size={17} />
                             Add Your First Topic
                         </button>
-
                     </div>
-
                 ) : (
-
                     <div className="topics-list">
-
                         {topics.map((topic, index) => (
-
                             <div
                                 className={`topic-item ${
                                     topic.completed ? 'completed' : ''
                                 }`}
                                 key={topic.id}
                             >
-
                                 <button
                                     className="topic-complete-btn"
                                     onClick={() => handleToggleComplete(topic)}
@@ -883,7 +1066,6 @@ const Topics = () => {
                                 </button>
 
                                 <div className="topic-item-info">
-
                                     <h3>
                                         {index + 1}. {topic.topicName}
                                     </h3>
@@ -899,10 +1081,47 @@ const Topics = () => {
                                         </span>
                                     )}
 
+                                    {topic.mastered && (
+                                        <span className="topic-mastered">
+                                            <Award size={15} />
+                                            Mastered
+                                        </span>
+                                    )}
+
+                                    {topic.completed && (
+                                        <div className="topic-test-actions">
+                                            <button
+                                                type="button"
+                                                className="start-topic-test-btn"
+                                                onClick={() => handleGenerateTest(topic)}
+                                                disabled={generatingTest}
+                                            >
+                                                {generatingTest ? (
+                                                    <>
+                                                        <Loader2 className="spin" size={16} />
+                                                        Generating Test...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Sparkles size={16} />
+                                                        Start AI Test
+                                                    </>
+                                                )}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="topic-test-history-btn"
+                                                onClick={() => handleGetTestHistory(topic)}
+                                            >
+                                                <History size={16} />
+                                                View Test History
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="topic-item-actions">
-
                                     <button
                                         onClick={() => handleEdit(topic)}
                                         title="Edit topic"
@@ -916,22 +1135,15 @@ const Topics = () => {
                                     >
                                         <Trash2 size={17} />
                                     </button>
-
                                 </div>
-
                             </div>
-
                         ))}
-
                     </div>
-
                 )}
-
             </div>
 
-            {/* Study Preferences - Bottom of Page */}
+            {/* Study Preferences */}
             <div className="preferences-section">
-
                 <button
                     type="button"
                     className="preferences-header"
@@ -953,9 +1165,7 @@ const Topics = () => {
                 </button>
 
                 {showPreferences && (
-
                     <div className="preferences-content">
-
                         <div className="preference-field">
                             <label>Daily Study Hours</label>
 
@@ -970,7 +1180,6 @@ const Topics = () => {
                         </div>
 
                         <div className="preference-row">
-
                             <div className="preference-field">
                                 <label>Preferred Start Time</label>
 
@@ -992,11 +1201,9 @@ const Topics = () => {
                                     onChange={handlePreferenceChange}
                                 />
                             </div>
-
                         </div>
 
                         <div className="preference-row">
-
                             <div className="preference-field">
                                 <label>Study Session Duration (minutes)</label>
 
@@ -1022,16 +1229,13 @@ const Topics = () => {
                                     onChange={handlePreferenceChange}
                                 />
                             </div>
-
                         </div>
 
                         <div className="preference-field">
                             <label>Study Days</label>
 
                             <div className="study-days">
-
                                 {weekdays.map(day => (
-
                                     <label
                                         key={day}
                                         className="study-day-option"
@@ -1044,9 +1248,7 @@ const Topics = () => {
 
                                         {day.slice(0, 3)}
                                     </label>
-
                                 ))}
-
                             </div>
                         </div>
 
@@ -1068,11 +1270,8 @@ const Topics = () => {
                                 </>
                             )}
                         </button>
-
                     </div>
-
                 )}
-
             </div>
 
             {/* Combined Timetable */}
@@ -1100,6 +1299,370 @@ const Topics = () => {
                     Create one conflict-free study schedule for all your upcoming examinations.
                 </p>
             </div>
+
+            {/* AI Test Modal */}
+            {activeTest && (
+                <div className="topic-test-overlay">
+                    <div className="topic-test-modal">
+                        <div className="topic-test-modal-header">
+                            <div>
+                                <h2>
+                                    <Sparkles size={21} />
+                                    AI Topic Test
+                                </h2>
+
+                                <p>{activeTest.topicName}</p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={handleCloseTest}
+                                title="Close test"
+                                disabled={submittingTest}
+                            >
+                                <X size={21} />
+                            </button>
+                        </div>
+
+                        <div className="topic-test-info">
+                            <span>
+                                <FileText size={16} />
+                                {activeTest.totalQuestions} Questions
+                            </span>
+
+                            <span
+                                className={
+                                    testTimeLeft <= 60
+                                        ? 'test-timer warning'
+                                        : 'test-timer'
+                                }
+                            >
+                                <Clock size={16} />
+                                {formatTestTime(testTimeLeft)}
+                            </span>
+                        </div>
+
+                        {testTimeLeft === 0 && (
+                            <div className="test-time-expired">
+                                <AlertCircle size={17} />
+                                Time is up! Your test is being submitted automatically.
+                            </div>
+                        )}
+
+                        <div className="topic-test-progress">
+                            <div>
+                                <span>
+                                    Answered: {testAnswers.filter(answer => answer !== null).length}
+                                    {' / '}
+                                    {activeTest.totalQuestions}
+                                </span>
+                            </div>
+
+                            <div className="topic-test-progress-bar">
+                                <div
+                                    style={{
+                                        width: `${
+                                            (testAnswers.filter(answer => answer !== null).length /
+                                                activeTest.totalQuestions) * 100
+                                        }%`
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="topic-test-questions">
+                            {activeTest.questions.map((question, questionIndex) => (
+                                <div
+                                    className="topic-test-question"
+                                    key={questionIndex}
+                                >
+                                    <h3>
+                                        <span>Q{question.questionNumber || questionIndex + 1}.</span>
+                                        {' '}
+                                        {question.question}
+                                    </h3>
+
+                                    <div className="topic-test-options">
+                                        {question.options.map((option, optionIndex) => (
+                                            <button
+                                                type="button"
+                                                key={optionIndex}
+                                                className={`topic-test-option ${
+                                                    testAnswers[questionIndex] === optionIndex
+                                                        ? 'selected'
+                                                        : ''
+                                                }`}
+                                                onClick={() =>
+                                                    handleAnswerSelect(questionIndex, optionIndex)
+                                                }
+                                                disabled={testTimeLeft <= 0 || submittingTest}
+                                            >
+                                                <span className="option-letter">
+                                                    {String.fromCharCode(65 + optionIndex)}
+                                                </span>
+
+                                                <span>{option}</span>
+
+                                                {testAnswers[questionIndex] === optionIndex && (
+                                                    <CheckCircle2 size={18} />
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="topic-test-modal-actions">
+                            <button
+                                type="button"
+                                className="cancel-topic-btn"
+                                onClick={handleCloseTest}
+                                disabled={submittingTest}
+                            >
+                                Close Test
+                            </button>
+
+                            <button
+                                type="button"
+                                className="submit-topic-test-btn"
+                                onClick={() => handleSubmitTest(false)}
+                                disabled={submittingTest}
+                            >
+                                {submittingTest ? (
+                                    <>
+                                        <Loader2 className="spin" size={17} />
+                                        Submitting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle2 size={17} />
+                                        {testTimeLeft <= 0 ? 'Submit Test' : 'Submit Test'}
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Test Result Modal */}
+            {testResult && (
+                <div className="topic-test-overlay">
+                    <div className="topic-test-modal topic-test-result-modal">
+                        <div className="topic-test-modal-header">
+                            <div>
+                                <h2>
+                                    <Award size={22} />
+                                    Test Result
+                                </h2>
+
+                                <p>{testResult.topicName}</p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={closeResultModal}
+                                title="Close result"
+                            >
+                                <X size={21} />
+                            </button>
+                        </div>
+
+                        <div
+                            className={`test-result-summary ${
+                                testResult.passed ? 'passed' : 'failed'
+                            }`}
+                        >
+                            {testResult.passed ? (
+                                <CheckCircle2 size={42} />
+                            ) : (
+                                <AlertCircle size={42} />
+                            )}
+
+                            <h2>{testResult.score}%</h2>
+
+                            <h3>
+                                {testResult.passed
+                                    ? 'Congratulations! You passed.'
+                                    : 'Keep practicing! You did not pass.'}
+                            </h3>
+
+                            <p>
+                                {testResult.correctAnswers} correct out of{' '}
+                                {testResult.totalQuestions} questions
+                            </p>
+
+                            <span>
+                                Passing score: {testResult.passMark}%
+                            </span>
+                        </div>
+
+                        <div className="test-result-review">
+                            <h3>Answer Review</h3>
+
+                            {testResult.review.map((item, index) => (
+                                <div
+                                    className={`test-review-item ${
+                                        item.isCorrect ? 'correct' : 'incorrect'
+                                    }`}
+                                    key={index}
+                                >
+                                    <h4>
+                                        {item.isCorrect ? (
+                                            <CheckCircle2 size={17} />
+                                        ) : (
+                                            <X size={17} />
+                                        )}
+
+                                        Question {item.questionNumber}
+                                    </h4>
+
+                                    <p>{item.question}</p>
+
+                                    <div>
+                                        Your answer:{' '}
+                                        <strong>
+                                            {item.selectedAnswer === -1
+                                                ? 'Not answered'
+                                                : item.options[item.selectedAnswer] || 'Not answered'}
+                                        </strong>
+                                    </div>
+
+                                    {!item.isCorrect && (
+                                        <div>
+                                            Correct answer:{' '}
+                                            <strong>
+                                                {item.options[item.correctAnswer]}
+                                            </strong>
+                                        </div>
+                                    )}
+
+                                    {item.explanation && (
+                                        <p className="test-review-explanation">
+                                            <strong>Explanation:</strong>{' '}
+                                            {item.explanation}
+                                        </p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="topic-test-modal-actions">
+                            <button
+                                type="button"
+                                className="cancel-topic-btn"
+                                onClick={closeResultModal}
+                            >
+                                Close
+                            </button>
+
+                            <button
+                                type="button"
+                                className="submit-topic-test-btn"
+                                onClick={() => {
+                                    const topic = topics.find(
+                                        item => item.topicName === testResult.topicName
+                                    );
+
+                                    closeResultModal();
+
+                                    if (topic) {
+                                        handleGenerateTest(topic);
+                                    }
+                                }}
+                            >
+                                <Sparkles size={17} />
+                                Retake Test
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Test History Modal */}
+            {showTestHistory && (
+                <div className="topic-test-overlay">
+                    <div className="topic-test-modal topic-test-history-modal">
+                        <div className="topic-test-modal-header">
+                            <div>
+                                <h2>
+                                    <History size={21} />
+                                    Test History
+                                </h2>
+
+                                <p>{historyTopicName}</p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setShowTestHistory(false)}
+                                title="Close history"
+                            >
+                                <X size={21} />
+                            </button>
+                        </div>
+
+                        {testHistory.length === 0 ? (
+                            <div className="empty-test-history">
+                                <History size={40} />
+
+                                <h3>No Test Attempts Yet</h3>
+
+                                <p>
+                                    Your completed test attempts will appear here.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="topic-test-history-list">
+                                {testHistory.map((test, index) => (
+                                    <div
+                                        className="topic-test-history-item"
+                                        key={test.id || index}
+                                    >
+                                        <div>
+                                            <h3>Attempt {testHistory.length - index}</h3>
+
+                                            <p>
+                                                {test.submittedAt
+                                                    ? new Date(test.submittedAt).toLocaleString()
+                                                    : 'Date unavailable'}
+                                            </p>
+
+                                            <span>
+                                                {test.correctAnswers} / {test.totalQuestions} correct
+                                            </span>
+                                        </div>
+
+                                        <div
+                                            className={`history-score ${
+                                                test.passed ? 'passed' : 'failed'
+                                            }`}
+                                        >
+                                            <strong>{test.score}%</strong>
+
+                                            <span>
+                                                {test.passed ? 'Passed' : 'Not passed'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="topic-test-modal-actions">
+                            <button
+                                type="button"
+                                className="cancel-topic-btn"
+                                onClick={() => setShowTestHistory(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
