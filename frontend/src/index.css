@@ -1,16 +1,141 @@
 
+/* Global reset */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body {
+/* Theme variables */
+:root {
     font-family: Arial, Helvetica, sans-serif;
-    background-color: #f8fafc;
     color: #1e293b;
+    background: #f8fafc;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --secondary-color: #64748b;
+    --success-color: #16a34a;
+    --danger-color: #dc2626;
+    --warning-color: #d97706;
+
+    --background-color: #f8fafc;
+    --surface-color: #ffffff;
+    --border-color: #e2e8f0;
+
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+
+    --border-radius: 12px;
+    --transition: all 0.2s ease;
 }
 
+/* Body */
+body {
+    min-width: 320px;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+/* Root container */
+#root {
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* Page content */
 .page-content {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
     padding: 35px 5%;
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+/* Links */
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* Buttons */
+button {
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+/* Form elements */
+input,
+textarea,
+select {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    display: block;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Selection */
+::selection {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+    .page-content {
+        padding: 25px 4%;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .page-content {
+        padding: 20px 4%;
+    }
 }

@@ -1,8 +1,7 @@
-
 .ai-learning-page {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 30px 20px;
+    padding: 30px 20px 50px;
 }
 
 .ai-learning-header {
@@ -15,6 +14,7 @@
 .ai-learning-heading-icon {
     width: 58px;
     height: 58px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -52,17 +52,19 @@
 
 .ai-learning-input-card textarea {
     width: 100%;
+    box-sizing: border-box;
     padding: 15px;
     border: 1px solid #d1d5db;
     border-radius: 10px;
     resize: vertical;
     font: inherit;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .ai-learning-input-card textarea:focus {
     border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
 .ai-learning-input-card h3 {
@@ -73,11 +75,12 @@
 
 .learning-modes {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 15px;
 }
 
 .learning-mode {
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -89,12 +92,13 @@
     color: #4b5563;
     cursor: pointer;
     text-align: left;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
 .learning-mode:hover {
     border-color: #a78bfa;
     background: #faf5ff;
+    transform: translateY(-2px);
 }
 
 .learning-mode.active {
@@ -128,11 +132,12 @@
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.2s;
 }
 
-.generate-learning-btn:hover {
+.generate-learning-btn:hover:not(:disabled) {
     background: #6d28d9;
+    transform: translateY(-1px);
 }
 
 .generate-learning-btn:disabled {
@@ -152,37 +157,19 @@
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
 }
 
 .ai-learning-response h2 {
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-top: 0;
     color: #6d28d9;
+    font-size: 21px;
 }
 
-@media (max-width: 650px) {
-    .ai-learning-page {
-        padding: 20px 14px;
-    }
-
-    .ai-learning-header h1 {
-        font-size: 23px;
-    }
-
-    .ai-learning-input-card {
-        padding: 20px;
-    }
-
-    .learning-modes {
-        grid-template-columns: 1fr;
-    }
-}
-
-
-/* ==========================================
-   AI LEARNING MARKDOWN CONTENT
-========================================== */
+/* AI-generated Markdown content */
 
 .ai-learning-markdown {
     color: #374151;
@@ -283,4 +270,62 @@
 .ai-learning-markdown a {
     color: #7c3aed;
     text-decoration: underline;
+}
+
+.spin {
+    animation: ai-learning-spin 1s linear infinite;
+}
+
+@keyframes ai-learning-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 650px) {
+    .ai-learning-page {
+        padding: 20px 14px 35px;
+    }
+
+    .ai-learning-header {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .ai-learning-header h1 {
+        font-size: 23px;
+    }
+
+    .ai-learning-heading-icon {
+        width: 48px;
+        height: 48px;
+    }
+
+    .ai-learning-input-card {
+        padding: 20px;
+    }
+
+    .learning-modes {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-learning-response {
+        padding: 18px;
+    }
+
+    .ai-learning-markdown {
+        font-size: 14px;
+    }
+
+    .ai-learning-markdown h1 {
+        font-size: 22px;
+    }
+
+    .ai-learning-markdown h2 {
+        font-size: 19px;
+    }
+
+    .ai-learning-markdown table {
+        font-size: 13px;
+    }
 }

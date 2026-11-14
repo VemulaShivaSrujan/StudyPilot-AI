@@ -149,21 +149,6 @@ const Profile = () => {
 
                 <form onSubmit={handleSubmit}>
 
-                    {/* Student ID */}
-                    <div className="profile-field">
-                        <label>Student ID</label>
-
-                        <div className="profile-input">
-                            <UserRound size={19} />
-
-                            <input
-                                type="text"
-                                value={profile.id}
-                                readOnly
-                            />
-                        </div>
-                    </div>
-
                     {/* Email Address */}
                     <div className="profile-field">
                         <label>Email Address</label>

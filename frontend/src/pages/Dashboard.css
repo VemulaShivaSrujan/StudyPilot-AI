@@ -1,26 +1,26 @@
 
-/* ================================
+/* =====================================
    DASHBOARD BASE
-================================ */
+===================================== */
 
 .dashboard {
     width: 100%;
-    max-width: 1400px;
+    max-width: 1500px;
     min-height: 100vh;
     margin: 0 auto;
-    padding: 30px;
-    box-sizing: border-box;
-    background: #f8faff;
+    padding: 32px 5%;
+    background: #f8fafc;
     color: #1e293b;
+    box-sizing: border-box;
 }
 
 .dashboard * {
     box-sizing: border-box;
 }
 
-/* ================================
-   HEADER
-================================ */
+/* =====================================
+   DASHBOARD HEADER
+===================================== */
 
 .dashboard-header {
     display: flex;
@@ -33,8 +33,8 @@
 .dashboard-label {
     display: inline-block;
     margin-bottom: 10px;
-    color: #6366f1;
-    font-size: 12px;
+    color: #4f46e5;
+    font-size: 11px;
     font-weight: 800;
     letter-spacing: 1.5px;
 }
@@ -44,10 +44,11 @@
     color: #172554;
     font-size: 30px;
     font-weight: 800;
+    line-height: 1.3;
 }
 
 .dashboard-header p {
-    margin: 0 0 9px;
+    margin: 0 0 8px;
     color: #64748b;
     font-size: 15px;
 }
@@ -57,12 +58,14 @@
     font-size: 13px;
 }
 
+/* Refresh Button */
+
 .dashboard-refresh-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 11px 17px;
+    padding: 11px 18px;
     color: #4f46e5;
     background: #ffffff;
     border: 1px solid #c7d2fe;
@@ -70,21 +73,25 @@
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .dashboard-refresh-btn:hover {
     background: #eef2ff;
+    border-color: #818cf8;
+    transform: translateY(-2px);
 }
 
 .dashboard-refresh-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
 }
 
-/* ================================
+/* =====================================
    ERROR MESSAGE
-================================ */
+===================================== */
 
 .dashboard-error {
     display: flex;
@@ -99,38 +106,57 @@
     font-size: 14px;
 }
 
-/* ================================
-   STATISTICS
-================================ */
+/* =====================================
+   STATISTICS GRID
+===================================== */
 
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
-    margin-bottom: 24px;
+    gap: 20px;
+    margin-bottom: 25px;
 }
 
 .stat-card {
+    position: relative;
     min-width: 0;
-    padding: 22px;
+    padding: 23px;
     background: #ffffff;
     border: 1px solid #e8edf5;
     border-radius: 15px;
     box-shadow: 0 3px 12px rgba(15, 23, 42, 0.035);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.25s ease;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
 .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 7px 20px rgba(15, 23, 42, 0.07);
+    transform: translateY(-4px);
+    border-color: #c7d2fe;
+    box-shadow: 0 9px 24px rgba(79, 70, 229, 0.09);
+}
+
+.stat-card:hover::before {
+    opacity: 1;
 }
 
 .stat-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 46px;
-    height: 46px;
+    width: 47px;
+    height: 47px;
     margin-bottom: 17px;
     color: #4f46e5;
     background: #eef2ff;
@@ -147,7 +173,7 @@
 .stat-card h2 {
     margin: 0 0 8px;
     color: #172554;
-    font-size: 26px;
+    font-size: 27px;
     font-weight: 800;
     overflow-wrap: anywhere;
 }
@@ -157,13 +183,13 @@
     font-size: 12px;
 }
 
-/* ================================
-   OVERALL PROGRESS
-================================ */
+/* =====================================
+   OVERALL STUDY PROGRESS
+===================================== */
 
 .dashboard-progress-card {
-    padding: 24px;
-    margin-bottom: 30px;
+    padding: 25px;
+    margin-bottom: 28px;
     background: #ffffff;
     border: 1px solid #e8edf5;
     border-radius: 15px;
@@ -175,7 +201,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 15px;
-    margin-bottom: 17px;
+    margin-bottom: 18px;
 }
 
 .dashboard-progress-heading h2 {
@@ -193,7 +219,7 @@
 
 .dashboard-progress-heading strong {
     color: #4f46e5;
-    font-size: 25px;
+    font-size: 26px;
     font-weight: 800;
 }
 
@@ -209,25 +235,29 @@
     height: 100%;
     background: linear-gradient(90deg, #6366f1, #8b5cf6);
     border-radius: 20px;
-    transition: width 0.4s ease;
+    transition: width 0.5s ease;
 }
 
-
-/* ================================
-   SMART STUDY RECOMMENDATIONS
-================================ */
+/* =====================================
+   SMART RECOMMENDATIONS
+===================================== */
 
 .dashboard-recommendations-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 25px;
-    padding: 25px;
-    margin-bottom: 30px;
-    background: linear-gradient(135deg, #ffffff, #f5f3ff);
+    padding: 26px;
+    margin-bottom: 28px;
+    background: linear-gradient(120deg, #ffffff, #f5f3ff);
     border: 1px solid #ddd6fe;
     border-radius: 15px;
     box-shadow: 0 3px 12px rgba(15, 23, 42, 0.035);
+    transition: box-shadow 0.2s ease;
+}
+
+.dashboard-recommendations-card:hover {
+    box-shadow: 0 7px 20px rgba(79, 70, 229, 0.08);
 }
 
 .dashboard-recommendations-content {
@@ -242,11 +272,11 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 55px;
-    height: 55px;
+    width: 56px;
+    height: 56px;
     color: #ffffff;
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    border-radius: 14px;
+    border-radius: 15px;
 }
 
 .dashboard-recommendations-content h2 {
@@ -260,7 +290,7 @@
     margin: 0;
     color: #64748b;
     font-size: 13px;
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 .dashboard-recommendations-button {
@@ -269,14 +299,14 @@
     justify-content: center;
     gap: 9px;
     flex-shrink: 0;
-    padding: 12px 17px;
+    padding: 12px 18px;
     color: #ffffff;
     background: #4f46e5;
     border-radius: 9px;
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
-    transition: 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .dashboard-recommendations-button:hover {
@@ -285,10 +315,9 @@
     transform: translateY(-2px);
 }
 
-
-/* ================================
-   DASHBOARD SECTIONS
-================================ */
+/* =====================================
+   DASHBOARD CONTENT SECTIONS
+===================================== */
 
 .dashboard-sections {
     display: grid;
@@ -300,7 +329,7 @@
     min-width: 0;
     padding: 25px;
     background: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #e8edf5;
     border-radius: 15px;
     box-shadow: 0 3px 12px rgba(15, 23, 42, 0.035);
     transition: box-shadow 0.2s ease;
@@ -310,7 +339,7 @@
     box-shadow: 0 7px 20px rgba(15, 23, 42, 0.06);
 }
 
-/* Card Heading */
+/* Section Heading */
 
 .dashboard-card-heading {
     display: flex;
@@ -327,7 +356,7 @@
     font-weight: 800;
 }
 
-/* Card Description */
+/* Empty State Text */
 
 .dashboard-card > p {
     margin: 0 0 20px;
@@ -336,9 +365,9 @@
     line-height: 1.7;
 }
 
-/* ================================
-   TODAY'S STUDY SESSIONS
-================================ */
+/* =====================================
+   TODAY'S STUDY PLAN
+===================================== */
 
 .dashboard-today-sessions {
     display: flex;
@@ -350,30 +379,11 @@
     padding-right: 8px;
 }
 
-/* Custom scrollbar */
-.dashboard-today-sessions::-webkit-scrollbar {
-    width: 6px;
-}
-
-.dashboard-today-sessions::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 10px;
-}
-
-.dashboard-today-sessions::-webkit-scrollbar-thumb {
-    background: #a5b4fc;
-    border-radius: 10px;
-}
-
-.dashboard-today-sessions::-webkit-scrollbar-thumb:hover {
-    background: #6366f1;
-}
-
 .dashboard-today-session {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 15px 0;
+    gap: 13px;
+    padding: 16px 0;
     border-bottom: 1px solid #edf0f5;
 }
 
@@ -386,8 +396,8 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #94a3b8;
     padding-top: 2px;
+    color: #94a3b8;
 }
 
 .dashboard-completed-icon {
@@ -419,9 +429,9 @@
     font-weight: 700;
 }
 
-/* ================================
-   UPCOMING EXAMS
-================================ */
+/* =====================================
+   UPCOMING EXAMINATIONS
+===================================== */
 
 .dashboard-upcoming-exams {
     display: flex;
@@ -431,25 +441,6 @@
     overflow-x: hidden;
     margin-bottom: 20px;
     padding-right: 8px;
-}
-
-/* Custom scrollbar */
-.dashboard-upcoming-exams::-webkit-scrollbar {
-    width: 6px;
-}
-
-.dashboard-upcoming-exams::-webkit-scrollbar-track {
-    background: #f1f5f9;
-    border-radius: 10px;
-}
-
-.dashboard-upcoming-exams::-webkit-scrollbar-thumb {
-    background: #a5b4fc;
-    border-radius: 10px;
-}
-
-.dashboard-upcoming-exams::-webkit-scrollbar-thumb:hover {
-    background: #6366f1;
 }
 
 .dashboard-exam-item {
@@ -480,7 +471,7 @@
 
 .dashboard-exam-item strong {
     flex-shrink: 0;
-    padding: 7px 10px;
+    padding: 7px 11px;
     color: #4f46e5;
     background: #eef2ff;
     border-radius: 7px;
@@ -488,34 +479,60 @@
     white-space: nowrap;
 }
 
-/* ================================
-   DASHBOARD LINKS
-================================ */
+/* =====================================
+   CUSTOM SCROLLBARS
+===================================== */
+
+.dashboard-today-sessions::-webkit-scrollbar,
+.dashboard-upcoming-exams::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dashboard-today-sessions::-webkit-scrollbar-track,
+.dashboard-upcoming-exams::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.dashboard-today-sessions::-webkit-scrollbar-thumb,
+.dashboard-upcoming-exams::-webkit-scrollbar-thumb {
+    background: #c7d2fe;
+    border-radius: 10px;
+}
+
+.dashboard-today-sessions::-webkit-scrollbar-thumb:hover,
+.dashboard-upcoming-exams::-webkit-scrollbar-thumb:hover {
+    background: #818cf8;
+}
+
+/* =====================================
+   DASHBOARD BUTTONS
+===================================== */
 
 .dashboard-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 11px 16px;
+    padding: 11px 17px;
     color: #ffffff;
     background: #4f46e5;
     border-radius: 8px;
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
-    transition: background 0.2s ease, transform 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .dashboard-button:hover {
     color: #ffffff;
     background: #4338ca;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
-/* ================================
-   LOADING
-================================ */
+/* =====================================
+   LOADING SCREEN
+===================================== */
 
 .dashboard-loading {
     display: flex;
@@ -546,9 +563,9 @@
     }
 }
 
-/* ================================
-   TABLET
-================================ */
+/* =====================================
+   TABLET RESPONSIVE
+===================================== */
 
 @media (max-width: 1050px) {
     .stats-grid {
@@ -560,18 +577,19 @@
     }
 }
 
-/* ================================
-   MOBILE
-================================ */
+/* =====================================
+   MOBILE RESPONSIVE
+===================================== */
 
 @media (max-width: 600px) {
     .dashboard {
-        padding: 20px 15px 35px;
+        padding: 22px 4%;
     }
 
     .dashboard-header {
         align-items: flex-start;
         flex-direction: column;
+        gap: 17px;
     }
 
     .dashboard-header h1 {
@@ -593,6 +611,10 @@
 
     .dashboard-progress-card {
         padding: 19px;
+    }
+
+    .dashboard-progress-heading h2 {
+        font-size: 17px;
     }
 
     .dashboard-card {
@@ -617,7 +639,16 @@
         align-items: stretch;
         flex-direction: column;
         gap: 18px;
-        padding: 19px;
+        padding: 20px;
+    }
+
+    .dashboard-recommendations-content {
+        align-items: flex-start;
+        gap: 13px;
+    }
+
+    .dashboard-recommendations-content h2 {
+        font-size: 16px;
     }
 
     .dashboard-recommendations-button {
@@ -625,9 +656,9 @@
     }
 }
 
-/* ================================
+/* =====================================
    SMALL MOBILE
-================================ */
+===================================== */
 
 @media (max-width: 380px) {
     .dashboard-header h1 {
@@ -638,7 +669,12 @@
         font-size: 23px;
     }
 
-    .dashboard-progress-heading h2 {
-        font-size: 16px;
+    .dashboard-progress-heading strong {
+        font-size: 22px;
+    }
+
+    .dashboard-recommendations-icon {
+        width: 45px;
+        height: 45px;
     }
 }

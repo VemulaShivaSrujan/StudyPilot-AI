@@ -18,7 +18,6 @@ import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 const Navbar = () => {
-
     const { logout } = useAuth();
     const navigate = useNavigate();
 
@@ -73,15 +72,19 @@ const Navbar = () => {
                 </Link>
 
                 {/* Student Profile */}
-                <Link to="/profile" className="navbar-profile">
+                <Link
+                    to="/profile"
+                    className="navbar-profile"
+                >
                     <UserRound size={20} />
                     <span>My Profile</span>
                 </Link>
 
-                {/* Logout Button */}
+                {/* Logout */}
                 <button
                     className="navbar-logout"
                     onClick={handleLogout}
+                    type="button"
                 >
                     <LogOut size={19} />
                     <span>Logout</span>
