@@ -20,6 +20,10 @@ import progressRoutes from './routes/progressRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 
+import {
+    startEmailReminderScheduler
+} from './services/emailReminderScheduler.js';
+
 dotenv.config();
 
 const app = express();
@@ -27,6 +31,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/subjects', subjectRoutes);
@@ -45,6 +50,7 @@ app.use('/api/chat', chatRoutes);
 // AI Learning workspace routes
 app.use('/api/learning', learningRoutes);
 
+// Progress and analytics routes
 app.use('/api/progress', progressRoutes);
 
 // Smart study recommendations routes
@@ -53,6 +59,7 @@ app.use('/api/recommendations', recommendationRoutes);
 // Notifications and reminders routes
 app.use('/api/notifications', notificationRoutes);
 
+// Welcome route
 app.get('/', (req, res) => {
     res.status(200).json({
         success: true,
@@ -62,9 +69,13 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
+// Start server
 const startServer = async () => {
     try {
         await connectDB();
+
+        // Start automatic email reminders
+        startEmailReminderScheduler();
 
         app.listen(PORT, () => {
             console.log(`StudyPilot AI server running on port ${PORT}`);
