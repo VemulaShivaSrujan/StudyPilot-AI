@@ -18,6 +18,7 @@ import chatRoutes from './routes/chatRoutes.js';
 import learningRoutes from './routes/learningRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 dotenv.config();
 
@@ -48,6 +49,9 @@ app.use('/api/progress', progressRoutes);
 
 // Smart study recommendations routes
 app.use('/api/recommendations', recommendationRoutes);
+
+// Notifications and reminders routes
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => {
     res.status(200).json({

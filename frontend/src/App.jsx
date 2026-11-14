@@ -28,6 +28,7 @@ import Timetable from './pages/Timetable';
 import AILearning from './pages/AILearning';
 import Progress from './pages/Progress';
 import Recommendations from './pages/Recommendations';
+import Notifications from './pages/Notifications';
 
 function AIAssistant() {
     return <AILearning />;
@@ -128,6 +129,11 @@ function App() {
                             <Route
                                     path="/recommendations"
                                     element={<Recommendations />}
+                            />
+
+                            <Route
+                                path="/notifications"
+                                element={<Notifications />}
                             />
 
                             <Route

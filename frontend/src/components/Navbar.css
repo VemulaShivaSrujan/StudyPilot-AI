@@ -1,4 +1,8 @@
 
+/* ================================
+   NAVBAR
+================================ */
+
 .navbar {
     width: 100%;
     min-height: 75px;
@@ -12,6 +16,9 @@
     gap: 25px;
 }
 
+/* ================================
+   LOGO
+================================ */
 
 .navbar-logo {
     display: flex;
@@ -24,6 +31,9 @@
     white-space: nowrap;
 }
 
+/* ================================
+   NAVIGATION LINKS
+================================ */
 
 .navbar-links {
     display: flex;
@@ -44,6 +54,9 @@
     color: #2563eb;
 }
 
+/* ================================
+   STUDENT PROFILE
+================================ */
 
 .navbar-profile {
     display: flex;
@@ -59,41 +72,54 @@
     white-space: nowrap;
 }
 
+/* ================================
+   NOTIFICATION BELL
+================================ */
 
-@media (max-width: 900px) {
-    .navbar {
-        flex-wrap: wrap;
-        padding: 15px 4%;
-    }
-
-    .navbar-links {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 18px;
-    }
+.navbar-notification {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    color: #2563eb;
+    background: #eff6ff;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: 0.2s ease;
 }
 
-@media (max-width: 480px) {
-    .navbar-logo {
-        font-size: 18px;
-    }
-
-    .navbar-links {
-        gap: 14px;
-    }
-
-    .nav-link {
-        font-size: 12px;
-    }
-
-    .navbar-profile {
-        padding: 8px;
-    }
+.navbar-notification:hover {
+    background: #dbeafe;
+    color: #1d4ed8;
 }
 
-/* Logout Button */
+.navbar-notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    color: #ffffff;
+    background: #ef4444;
+    border: 2px solid #ffffff;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* ================================
+   LOGOUT BUTTON
+================================ */
+
 .navbar-logout {
     display: flex;
     align-items: center;
@@ -114,6 +140,56 @@
     background: #fef2f2;
     border-color: #dc2626;
 }
+
+/* ================================
+   TABLET
+================================ */
+
+@media (max-width: 900px) {
+    .navbar {
+        flex-wrap: wrap;
+        padding: 15px 4%;
+    }
+
+    .navbar-links {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 18px;
+    }
+}
+
+/* ================================
+   MOBILE
+================================ */
+
+@media (max-width: 480px) {
+    .navbar-logo {
+        font-size: 18px;
+    }
+
+    .navbar-links {
+        gap: 14px;
+    }
+
+    .nav-link {
+        font-size: 12px;
+    }
+
+    .navbar-profile {
+        padding: 8px;
+    }
+
+    .navbar-notification {
+        width: 38px;
+        height: 38px;
+    }
+}
+
+/* ================================
+   SMALL SCREENS
+================================ */
 
 @media (max-width: 768px) {
     .navbar-logout {

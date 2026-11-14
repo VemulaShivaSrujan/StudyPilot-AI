@@ -9,7 +9,8 @@ import {
 import {
     GraduationCap,
     UserRound,
-    LogOut
+    LogOut,
+    Bell
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -60,6 +61,16 @@ const Navbar = () => {
                         </NavLink>
                     ))}
                 </div>
+
+                {/* Notification Bell */}
+                <Link
+                    to="/notifications"
+                    className="navbar-notification"
+                    title="Notifications"
+                    aria-label="View notifications"
+                >
+                    <Bell size={21} />
+                </Link>
 
                 {/* Student Profile */}
                 <Link to="/profile" className="navbar-profile">
