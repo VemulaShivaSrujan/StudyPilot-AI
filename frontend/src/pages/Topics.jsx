@@ -20,20 +20,19 @@ import {
     CalendarDays,
     Award,
     History,
-    AlertCircle
+    AlertCircle,
+    AlertTriangle
 } from 'lucide-react';
 
 import api from '../services/api';
 import './Topics.css';
 
 const Topics = () => {
-    // AI topic states
     const [pdfFile, setPdfFile] = useState(null);
     const [generatedTopics, setGeneratedTopics] = useState([]);
     const [generatingTopics, setGeneratingTopics] = useState(false);
     const [selectedGeneratedTopics, setSelectedGeneratedTopics] = useState([]);
 
-    // Study preferences
     const [showPreferences, setShowPreferences] = useState(false);
 
     const [preferences, setPreferences] = useState({
@@ -66,7 +65,6 @@ const Topics = () => {
     const navigate = useNavigate();
     const subjectId = searchParams.get('subjectId');
 
-    // Topic states
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -76,13 +74,17 @@ const Topics = () => {
     const [description, setDescription] = useState('');
     const [estimatedTime, setEstimatedTime] = useState('');
 
-    // General messages and loading states
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [saving, setSaving] = useState(false);
     const [generatingTimetable, setGeneratingTimetable] = useState(false);
 
-    // AI Topic Test states
+    // Custom delete popup states
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [topicToDelete, setTopicToDelete] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+    const [deleteFeedback, setDeleteFeedback] = useState(null);
+
     const [activeTest, setActiveTest] = useState(null);
     const [testAnswers, setTestAnswers] = useState([]);
     const [testTimeLeft, setTestTimeLeft] = useState(0);
@@ -282,21 +284,58 @@ const Topics = () => {
         setSuccess('');
     };
 
-    const handleDelete = async (topicId) => {
-        if (!window.confirm('Are you sure you want to delete this topic?')) {
+    // Open custom delete confirmation
+    const handleDelete = (topic) => {
+        if (!topic?.id) {
+            setError('Invalid topic ID.');
             return;
         }
 
-        try {
-            await api.delete(`/topics/${topicId}`, config);
+        setTopicToDelete(topic);
+        setShowDeleteModal(true);
+        setDeleteFeedback(null);
+    };
 
-            setSuccess('Topic deleted successfully!');
-            await fetchTopics();
-        } catch (error) {
-            setError(
-                error.response?.data?.message ||
-                'Failed to delete topic.'
+    const handleCancelDelete = () => {
+        if (deleting) return;
+
+        setShowDeleteModal(false);
+        setTopicToDelete(null);
+    };
+
+    // Confirm and delete topic
+    const confirmDelete = async () => {
+        if (!topicToDelete?.id || deleting) return;
+
+        try {
+            setDeleting(true);
+
+            await api.delete(
+                `/topics/${topicToDelete.id}`,
+                config
             );
+
+            setShowDeleteModal(false);
+            setTopicToDelete(null);
+
+            await fetchTopics();
+
+            setDeleteFeedback({
+                type: 'success',
+                message: 'The topic has been deleted successfully.'
+            });
+        } catch (error) {
+            setShowDeleteModal(false);
+            setTopicToDelete(null);
+
+            setDeleteFeedback({
+                type: 'error',
+                message:
+                    error.response?.data?.message ||
+                    'Failed to delete topic. Please try again.'
+            });
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -538,7 +577,6 @@ const Topics = () => {
             setTestAnswers([]);
 
             await fetchTopics();
-
         } catch (error) {
             console.error('Submit test error:', error);
 
@@ -591,7 +629,6 @@ const Topics = () => {
         setTestResult(null);
     };
 
-    // Countdown timer and automatic submission
     useEffect(() => {
         if (!activeTest || submittingTest) {
             return;
@@ -693,7 +730,6 @@ const Topics = () => {
     return (
         <div className="topics-page">
 
-            {/* Header */}
             <div className="topics-header">
                 <div>
                     <h1>My Topics</h1>
@@ -712,7 +748,6 @@ const Topics = () => {
                 </button>
             </div>
 
-            {/* Messages */}
             {error && (
                 <div className="topic-message error">
                     {error}
@@ -1130,7 +1165,7 @@ const Topics = () => {
                                     </button>
 
                                     <button
-                                        onClick={() => handleDelete(topic.id)}
+                                        onClick={() => handleDelete(topic)}
                                         title="Delete topic"
                                     >
                                         <Trash2 size={17} />
@@ -1437,7 +1472,7 @@ const Topics = () => {
                                 ) : (
                                     <>
                                         <CheckCircle2 size={17} />
-                                        {testTimeLeft <= 0 ? 'Submit Test' : 'Submit Test'}
+                                        Submit Test
                                     </>
                                 )}
                             </button>
@@ -1659,6 +1694,95 @@ const Topics = () => {
                                 Close
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Custom Delete Confirmation Popup */}
+            {showDeleteModal && topicToDelete && (
+                <div
+                    className="delete-modal-overlay"
+                    onClick={handleCancelDelete}
+                >
+                    <div
+                        className="delete-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="delete-modal-title"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="delete-modal-icon">
+                            <AlertTriangle size={30} />
+                        </div>
+
+                        <h2 id="delete-modal-title">
+                            Delete Topic?
+                        </h2>
+
+                        <p>
+                            Are you sure you want to delete{' '}
+                            <strong>{topicToDelete.topicName}</strong>?
+                            This action cannot be undone.
+                        </p>
+
+                        <div className="delete-modal-actions">
+                            <button
+                                type="button"
+                                className="delete-cancel-btn"
+                                onClick={handleCancelDelete}
+                                disabled={deleting}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                className="delete-confirm-btn"
+                                onClick={confirmDelete}
+                                disabled={deleting}
+                            >
+                                {deleting ? 'Deleting...' : 'Yes, Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Success / Error Popup */}
+            {deleteFeedback && (
+                <div
+                    className="delete-modal-overlay"
+                    onClick={() => setDeleteFeedback(null)}
+                >
+                    <div
+                        className={`delete-feedback-modal ${deleteFeedback.type}`}
+                        role="alertdialog"
+                        aria-modal="true"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className={`feedback-icon ${deleteFeedback.type}`}>
+                            {deleteFeedback.type === 'success' ? (
+                                <CheckCircle2 size={32} />
+                            ) : (
+                                <AlertCircle size={32} />
+                            )}
+                        </div>
+
+                        <h2>
+                            {deleteFeedback.type === 'success'
+                                ? 'Deleted Successfully!'
+                                : 'Deletion Failed'}
+                        </h2>
+
+                        <p>{deleteFeedback.message}</p>
+
+                        <button
+                            type="button"
+                            className="feedback-ok-btn"
+                            onClick={() => setDeleteFeedback(null)}
+                        >
+                            OK
+                        </button>
                     </div>
                 </div>
             )}

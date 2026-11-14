@@ -18,9 +18,7 @@
     box-sizing: border-box;
 }
 
-/* =====================================
-   PAGE HEADER
-===================================== */
+/* PAGE HEADER */
 
 .exams-header {
     display: flex;
@@ -43,7 +41,7 @@
     font-size: 15px;
 }
 
-/* Add Exam Button */
+/* ADD EXAM BUTTON */
 
 .add-exam-button {
     display: inline-flex;
@@ -67,9 +65,7 @@
     transform: translateY(-2px);
 }
 
-/* =====================================
-   ALERT MESSAGES
-===================================== */
+/* ALERT MESSAGES */
 
 .exam-message {
     display: flex;
@@ -94,9 +90,7 @@
     border: 1px solid #bbf7d0;
 }
 
-/* =====================================
-   EXAM STATISTICS
-===================================== */
+/* EXAM STATISTICS */
 
 .exam-stats {
     display: grid;
@@ -148,9 +142,7 @@
     font-size: 13px;
 }
 
-/* =====================================
-   ADD / EDIT EXAM FORM
-===================================== */
+/* ADD / EDIT EXAM FORM */
 
 .exam-form-card {
     padding: 27px;
@@ -197,7 +189,7 @@
     background: #fee2e2;
 }
 
-/* Form Grid */
+/* FORM GRID */
 
 .exam-form-grid {
     display: grid;
@@ -261,7 +253,7 @@
     grid-column: 1 / -1;
 }
 
-/* Form Actions */
+/* FORM ACTIONS */
 
 .exam-form-actions {
     display: flex;
@@ -311,9 +303,7 @@
     cursor: not-allowed;
 }
 
-/* =====================================
-   EXAM SECTIONS
-===================================== */
+/* EXAM SECTIONS */
 
 .exam-section {
     margin-bottom: 35px;
@@ -326,9 +316,7 @@
     font-weight: 800;
 }
 
-/* =====================================
-   EXAM GRID
-===================================== */
+/* EXAM GRID */
 
 .exam-grid {
     display: grid;
@@ -336,9 +324,7 @@
     gap: 20px;
 }
 
-/* =====================================
-   EXAM CARD
-===================================== */
+/* EXAM CARD */
 
 .exam-card {
     min-width: 0;
@@ -365,7 +351,7 @@
     margin-bottom: 18px;
 }
 
-/* Badges */
+/* BADGES */
 
 .priority-badge,
 .exam-status {
@@ -409,7 +395,7 @@
     background: #f1f5f9;
 }
 
-/* Card Information */
+/* CARD INFORMATION */
 
 .exam-card h3 {
     margin: 0 0 9px;
@@ -447,9 +433,7 @@
     overflow-wrap: anywhere;
 }
 
-/* =====================================
-   EXAM CARD ACTIONS
-===================================== */
+/* EXAM CARD ACTIONS */
 
 .exam-card-actions {
     display: flex;
@@ -492,7 +476,7 @@
     background: #fee2e2;
 }
 
-/* Completed Exam */
+/* COMPLETED EXAM */
 
 .completed-exam {
     background: #fafbfc;
@@ -502,9 +486,7 @@
     background: #ffffff;
 }
 
-/* =====================================
-   EMPTY STATE
-===================================== */
+/* EMPTY STATE */
 
 .exam-empty {
     display: flex;
@@ -535,9 +517,7 @@
     font-size: 14px;
 }
 
-/* =====================================
-   LOADING
-===================================== */
+/* LOADING */
 
 .exams-loading {
     display: flex;
@@ -549,8 +529,185 @@
 }
 
 /* =====================================
-   TABLET
+   DELETE CONFIRMATION POPUP
 ===================================== */
+
+.delete-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.58);
+    backdrop-filter: blur(5px);
+    animation: modalOverlayIn 0.2s ease;
+}
+
+.delete-modal,
+.delete-feedback-modal {
+    width: 100%;
+    max-width: 430px;
+    padding: 32px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    animation: modalContentIn 0.25s ease;
+}
+
+.delete-modal-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 20px;
+    color: #dc2626;
+    background: #fee2e2;
+    border-radius: 50%;
+}
+
+.delete-modal h2,
+.delete-feedback-modal h2 {
+    margin: 0 0 12px;
+    color: #172033;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+.delete-modal p,
+.delete-feedback-modal p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.delete-modal p strong {
+    color: #334155;
+}
+
+/* DELETE MODAL BUTTONS */
+
+.delete-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.delete-cancel-btn,
+.delete-confirm-btn,
+.feedback-ok-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-cancel-btn {
+    color: #475569;
+    background: #f1f5f9;
+}
+
+.delete-cancel-btn:hover {
+    background: #e2e8f0;
+}
+
+.delete-confirm-btn {
+    color: #ffffff;
+    background: #dc2626;
+}
+
+.delete-confirm-btn:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+}
+
+.delete-cancel-btn:disabled,
+.delete-confirm-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* SUCCESS / ERROR FEEDBACK */
+
+.feedback-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+}
+
+.feedback-icon.success {
+    color: #16a34a;
+    background: #dcfce7;
+}
+
+.feedback-icon.error {
+    color: #dc2626;
+    background: #fee2e2;
+}
+
+.feedback-ok-btn {
+    margin-top: 25px;
+    color: #ffffff;
+    background: #4f46e5;
+}
+
+.feedback-ok-btn:hover {
+    background: #4338ca;
+    transform: translateY(-2px);
+}
+
+/* POPUP ANIMATIONS */
+
+@keyframes modalOverlayIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes modalContentIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* BUTTON FOCUS */
+
+.exams-page button:focus-visible,
+.delete-modal-overlay button:focus-visible {
+    outline: 3px solid rgba(99, 102, 241, 0.35);
+    outline-offset: 3px;
+}
+
+/* TABLET */
 
 @media (max-width: 1050px) {
     .exam-grid {
@@ -566,9 +723,7 @@
     }
 }
 
-/* =====================================
-   MOBILE
-===================================== */
+/* MOBILE */
 
 @media (max-width: 650px) {
     .exams-page {
@@ -632,11 +787,28 @@
     .exam-card {
         padding: 19px;
     }
+
+    .delete-modal,
+    .delete-feedback-modal {
+        padding: 26px 20px;
+    }
+
+    .delete-modal h2,
+    .delete-feedback-modal h2 {
+        font-size: 21px;
+    }
+
+    .delete-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .delete-modal-actions button,
+    .feedback-ok-btn {
+        width: 100%;
+    }
 }
 
-/* =====================================
-   SMALL MOBILE
-===================================== */
+/* SMALL MOBILE */
 
 @media (max-width: 380px) {
     .exams-header h1 {

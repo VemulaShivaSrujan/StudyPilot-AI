@@ -10,15 +10,15 @@ import {
     Trash2,
     X,
     AlertCircle,
-    GraduationCap
+    GraduationCap,
+    AlertTriangle,
+    CheckCircle2
 } from 'lucide-react';
 
 import api from '../services/api';
-
 import './Exams.css';
 
 const Exams = () => {
-
     const navigate = useNavigate();
 
     const [exams, setExams] = useState([]);
@@ -30,6 +30,11 @@ const Exams = () => {
 
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [examToDelete, setExamToDelete] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+    const [deleteFeedback, setDeleteFeedback] = useState(null);
 
     const initialForm = {
         examName: '',
@@ -43,17 +48,17 @@ const Exams = () => {
 
     const token = localStorage.getItem('token');
 
+    const config = {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    };
+
     // Fetch all exams
     const fetchExams = async () => {
         try {
-            const response = await api.get('/exams', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-
+            const response = await api.get('/exams', config);
             setExams(response.data.exams || []);
-
         } catch (error) {
             setError(
                 error.response?.data?.message ||
@@ -117,25 +122,12 @@ const Exams = () => {
                 await api.put(
                     `/exams/${editingExam.id}`,
                     formData,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
+                    config
                 );
 
                 setMessage('Exam updated successfully!');
-
             } else {
-                await api.post(
-                    '/exams',
-                    formData,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
-                );
+                await api.post('/exams', formData, config);
 
                 setMessage('Exam added successfully!');
             }
@@ -156,34 +148,55 @@ const Exams = () => {
         }
     };
 
-    // Delete exam
-    const handleDeleteExam = async (examId) => {
-
-        const confirmed = window.confirm(
-            'Are you sure you want to delete this exam?'
-        );
-
-        if (!confirmed) return;
-
+    // Open delete confirmation
+    const handleDeleteExam = (exam) => {
+        setExamToDelete(exam);
+        setShowDeleteModal(true);
+        setDeleteFeedback(null);
         setError('');
         setMessage('');
+    };
+
+    // Cancel deletion
+    const handleCancelDelete = () => {
+        if (deleting) return;
+
+        setShowDeleteModal(false);
+        setExamToDelete(null);
+    };
+
+    // Confirm deletion
+    const confirmDelete = async () => {
+        if (!examToDelete || deleting) return;
 
         try {
-            await api.delete(`/exams/${examId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            setDeleting(true);
+            setError('');
+            setMessage('');
 
-            setMessage('Exam deleted successfully!');
+            await api.delete(`/exams/${examToDelete.id}`, config);
+
+            setShowDeleteModal(false);
+            setExamToDelete(null);
 
             await fetchExams();
 
+            setDeleteFeedback({
+                type: 'success',
+                message: 'Exam deleted successfully!'
+            });
+
         } catch (error) {
-            setError(
-                error.response?.data?.message ||
-                'Unable to delete exam.'
-            );
+            setShowDeleteModal(false);
+            setExamToDelete(null);
+
+            setDeleteFeedback({
+                type: 'error',
+                message: error.response?.data?.message ||
+                    'Unable to delete exam. Please try again.'
+            });
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -239,7 +252,6 @@ const Exams = () => {
 
             {/* Page Header */}
             <div className="exams-header">
-
                 <div>
                     <h1>My Exams</h1>
                     <p>
@@ -254,7 +266,6 @@ const Exams = () => {
                     <Plus size={19} />
                     Add Exam
                 </button>
-
             </div>
 
             {/* Messages */}
@@ -267,13 +278,13 @@ const Exams = () => {
 
             {message && (
                 <div className="exam-message exam-success">
+                    <CheckCircle2 size={18} />
                     {message}
                 </div>
             )}
 
             {/* Statistics */}
             <div className="exam-stats">
-
                 <div className="exam-stat-card">
                     <CalendarDays size={25} />
                     <div>
@@ -297,16 +308,12 @@ const Exams = () => {
                         <p>Completed Exams</p>
                     </div>
                 </div>
-
             </div>
 
             {/* Add / Edit Form */}
             {showForm && (
-
                 <div className="exam-form-card">
-
                     <div className="exam-form-heading">
-
                         <h2>
                             {editingExam ? 'Edit Exam' : 'Add New Exam'}
                         </h2>
@@ -318,16 +325,12 @@ const Exams = () => {
                         >
                             <X size={22} />
                         </button>
-
                     </div>
 
                     <form onSubmit={handleSubmit}>
-
                         <div className="exam-form-grid">
-
                             <div className="exam-field">
                                 <label>Exam Name *</label>
-
                                 <input
                                     type="text"
                                     name="examName"
@@ -341,7 +344,6 @@ const Exams = () => {
 
                             <div className="exam-field">
                                 <label>Exam Type *</label>
-
                                 <select
                                     name="examType"
                                     value={formData.examType}
@@ -358,7 +360,6 @@ const Exams = () => {
 
                             <div className="exam-field">
                                 <label>Exam Date *</label>
-
                                 <input
                                     type="date"
                                     name="examDate"
@@ -371,7 +372,6 @@ const Exams = () => {
 
                             <div className="exam-field">
                                 <label>Priority *</label>
-
                                 <select
                                     name="priority"
                                     value={formData.priority}
@@ -386,7 +386,6 @@ const Exams = () => {
 
                             <div className="exam-field exam-description">
                                 <label>Description</label>
-
                                 <textarea
                                     name="description"
                                     value={formData.description}
@@ -396,11 +395,9 @@ const Exams = () => {
                                     maxLength={1000}
                                 />
                             </div>
-
                         </div>
 
                         <div className="exam-form-actions">
-
                             <button
                                 type="button"
                                 className="exam-cancel-button"
@@ -420,21 +417,16 @@ const Exams = () => {
                                         ? 'Update Exam'
                                         : 'Save Exam'}
                             </button>
-
                         </div>
-
                     </form>
-
                 </div>
             )}
 
             {/* Upcoming Exams */}
             <div className="exam-section">
-
                 <h2>Upcoming Exams</h2>
 
                 {upcomingExams.length === 0 ? (
-
                     <div className="exam-empty">
                         <CalendarDays size={42} />
                         <h3>No Upcoming Exams</h3>
@@ -442,13 +434,9 @@ const Exams = () => {
                             Add your examinations to start planning.
                         </p>
                     </div>
-
                 ) : (
-
                     <div className="exam-grid">
-
                         {upcomingExams.map((exam) => (
-
                             <div
                                 className="exam-card"
                                 key={exam.id}
@@ -456,9 +444,7 @@ const Exams = () => {
                                 style={{ cursor: 'pointer' }}
                                 title="Click to view subjects"
                             >
-
                                 <div className="exam-card-top">
-
                                     <span className={`priority-badge ${exam.priority.toLowerCase()}`}>
                                         {exam.priority} Priority
                                     </span>
@@ -466,7 +452,6 @@ const Exams = () => {
                                     <span className={`exam-status ${getExamStatus(exam.examDate).toLowerCase()}`}>
                                         {getExamStatus(exam.examDate)}
                                     </span>
-
                                 </div>
 
                                 <h3>{exam.examName}</h3>
@@ -487,7 +472,6 @@ const Exams = () => {
                                 )}
 
                                 <div className="exam-card-actions">
-
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -502,37 +486,27 @@ const Exams = () => {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            handleDeleteExam(exam.id);
+                                            handleDeleteExam(exam);
                                         }}
                                         className="exam-delete-button"
                                     >
                                         <Trash2 size={16} />
                                         Delete
                                     </button>
-
                                 </div>
-
                             </div>
-
                         ))}
-
                     </div>
-
                 )}
-
             </div>
 
             {/* Completed Exams */}
             {completedExams.length > 0 && (
-
                 <div className="exam-section">
-
                     <h2>Completed Exams</h2>
 
                     <div className="exam-grid">
-
                         {completedExams.map((exam) => (
-
                             <div
                                 className="exam-card completed-exam"
                                 key={exam.id}
@@ -540,7 +514,6 @@ const Exams = () => {
                                 style={{ cursor: 'pointer' }}
                                 title="Click to view subjects"
                             >
-
                                 <span className="exam-status completed">
                                     Completed
                                 </span>
@@ -557,28 +530,107 @@ const Exams = () => {
                                 </div>
 
                                 <div className="exam-card-actions">
-
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            handleDeleteExam(exam.id);
+                                            handleDeleteExam(exam);
                                         }}
                                         className="exam-delete-button"
                                     >
                                         <Trash2 size={16} />
                                         Delete
                                     </button>
-
                                 </div>
-
                             </div>
-
                         ))}
-
                     </div>
-
                 </div>
+            )}
 
+            {/* Delete Confirmation Popup */}
+            {showDeleteModal && examToDelete && (
+                <div
+                    className="delete-modal-overlay"
+                    onClick={handleCancelDelete}
+                >
+                    <div
+                        className="delete-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="exam-delete-title"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="delete-modal-icon">
+                            <AlertTriangle size={30} />
+                        </div>
+
+                        <h2 id="exam-delete-title">
+                            Delete Exam?
+                        </h2>
+
+                        <p>
+                            Are you sure you want to delete
+                            {' '}
+                            <strong>{examToDelete.examName}</strong>?
+                            {' '}
+                            This action cannot be undone.
+                        </p>
+
+                        <div className="delete-modal-actions">
+                            <button
+                                className="delete-cancel-btn"
+                                onClick={handleCancelDelete}
+                                disabled={deleting}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                className="delete-confirm-btn"
+                                onClick={confirmDelete}
+                                disabled={deleting}
+                            >
+                                {deleting ? 'Deleting...' : 'Yes, Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Success / Error Popup */}
+            {deleteFeedback && (
+                <div
+                    className="delete-modal-overlay"
+                    onClick={() => setDeleteFeedback(null)}
+                >
+                    <div
+                        className={`delete-feedback-modal ${deleteFeedback.type}`}
+                        role="alertdialog"
+                        aria-modal="true"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className={`feedback-icon ${deleteFeedback.type}`}>
+                            {deleteFeedback.type === 'success'
+                                ? <CheckCircle2 size={32} />
+                                : <AlertCircle size={32} />}
+                        </div>
+
+                        <h2>
+                            {deleteFeedback.type === 'success'
+                                ? 'Successfully Deleted!'
+                                : 'Deletion Failed'}
+                        </h2>
+
+                        <p>{deleteFeedback.message}</p>
+
+                        <button
+                            className="feedback-ok-btn"
+                            onClick={() => setDeleteFeedback(null)}
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
             )}
 
         </div>

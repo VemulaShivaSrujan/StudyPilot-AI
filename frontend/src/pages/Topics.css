@@ -1775,3 +1775,210 @@
         font-size: 15px;
     }
 }
+
+/* =========================================
+   CUSTOM DELETE CONFIRMATION POPUP
+========================================= */
+
+.delete-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(5px);
+    animation: delete-overlay-show 0.2s ease;
+}
+
+.delete-modal,
+.delete-feedback-modal {
+    width: 100%;
+    max-width: 420px;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+    animation: delete-modal-show 0.25s ease;
+}
+
+.delete-modal-icon {
+    width: 65px;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    background: #fff1f2;
+    color: #e11d48;
+    border-radius: 50%;
+}
+
+.delete-modal h2,
+.delete-feedback-modal h2 {
+    margin: 0 0 12px;
+    color: #1e293b;
+    font-size: 22px;
+    font-weight: 750;
+}
+
+.delete-modal p,
+.delete-feedback-modal p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.delete-modal p strong {
+    color: #334155;
+}
+
+.delete-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 27px;
+}
+
+.delete-cancel-btn,
+.delete-confirm-btn,
+.feedback-ok-btn {
+    min-width: 115px;
+    padding: 11px 18px;
+    border: none;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.delete-cancel-btn {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.delete-cancel-btn:hover {
+    background: #e2e8f0;
+}
+
+.delete-confirm-btn {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.delete-confirm-btn:hover {
+    background: #b91c1c;
+}
+
+.delete-cancel-btn:disabled,
+.delete-confirm-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   DELETE SUCCESS / ERROR POPUP
+========================================= */
+
+.feedback-icon {
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+}
+
+.feedback-icon.success {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.feedback-icon.error {
+    background: #fff1f2;
+    color: #e11d48;
+}
+
+.delete-feedback-modal.success {
+    border-top: 4px solid #16a34a;
+}
+
+.delete-feedback-modal.error {
+    border-top: 4px solid #e11d48;
+}
+
+.feedback-ok-btn {
+    margin-top: 25px;
+    background: #4f46e5;
+    color: #ffffff;
+}
+
+.feedback-ok-btn:hover {
+    background: #4338ca;
+}
+
+/* =========================================
+   POPUP ANIMATIONS
+========================================= */
+
+@keyframes delete-overlay-show {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes delete-modal-show {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* =========================================
+   POPUP RESPONSIVE DESIGN
+========================================= */
+
+@media (max-width: 480px) {
+    .delete-modal,
+    .delete-feedback-modal {
+        max-width: 100%;
+        padding: 25px 20px;
+        border-radius: 15px;
+    }
+
+    .delete-modal h2,
+    .delete-feedback-modal h2 {
+        font-size: 19px;
+    }
+
+    .delete-modal p,
+    .delete-feedback-modal p {
+        font-size: 13px;
+    }
+
+    .delete-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .delete-cancel-btn,
+    .delete-confirm-btn,
+    .feedback-ok-btn {
+        width: 100%;
+    }
+}

@@ -9,7 +9,9 @@ import {
     Trash2,
     X,
     Layers,
-    AlertCircle
+    AlertCircle,
+    AlertTriangle,
+    CheckCircle2
 } from 'lucide-react';
 
 import api from '../services/api';
@@ -28,7 +30,6 @@ const Subjects = () => {
     const [searchParams] = useSearchParams();
 
     const requestedExamId = searchParams.get('examId');
-
     const token = localStorage.getItem('token');
 
     const config = {
@@ -39,7 +40,6 @@ const Subjects = () => {
 
     const [exams, setExams] = useState([]);
     const [subjects, setSubjects] = useState([]);
-
     const [selectedExam, setSelectedExam] = useState('');
 
     const [loadingExams, setLoadingExams] = useState(true);
@@ -57,14 +57,19 @@ const Subjects = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // Fetch student's examinations
+    // Delete popup states
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [subjectToDelete, setSubjectToDelete] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+    const [deleteFeedback, setDeleteFeedback] = useState(null);
+
+    // Fetch examinations
     const fetchExams = async () => {
         try {
             setLoadingExams(true);
             setError('');
 
             const response = await api.get('/exams', config);
-
             const examList = response.data.exams || [];
 
             setExams(examList);
@@ -100,15 +105,9 @@ const Subjects = () => {
         }
     };
 
-    // Fetch subjects belonging to selected examination
+    // Fetch subjects
     const fetchSubjects = async (examId) => {
-        console.log('========== SUBJECT FETCH DEBUG ==========');
-        console.log('Exam ID received:', JSON.stringify(examId));
-        console.log('Exam ID type:', typeof examId);
-        console.log('Exam ID length:', String(examId).length);
-
         if (!isValidMongoId(examId)) {
-            console.error('Invalid examination ID:', examId);
             setSubjects([]);
             return;
         }
@@ -122,14 +121,10 @@ const Subjects = () => {
                 config
             );
 
-            console.log('Subjects API response:', response.data);
-
             setSubjects(response.data.subjects || []);
 
         } catch (err) {
-            console.error('Subjects API status:', err.response?.status);
-            console.error('Subjects API response:', err.response?.data);
-            console.error('Subjects API error:', err.message);
+            console.error('Fetch subjects error:', err.response?.data || err.message);
 
             setSubjects([]);
 
@@ -143,12 +138,10 @@ const Subjects = () => {
         }
     };
 
-    // Initial exam loading
     useEffect(() => {
         fetchExams();
     }, []);
 
-    // Load subjects whenever selected examination changes
     useEffect(() => {
         if (selectedExam && isValidMongoId(selectedExam)) {
             fetchSubjects(selectedExam);
@@ -157,18 +150,16 @@ const Subjects = () => {
         }
     }, [selectedExam]);
 
-    // Handle examination dropdown
+    // Handle examination selection
     const handleExamChange = (event) => {
-        const examId = event.target.value;
-
-        setSelectedExam(examId);
+        setSelectedExam(event.target.value);
         setShowForm(false);
         setEditingSubject(null);
         setError('');
         setSuccess('');
     };
 
-    // Open add subject form
+    // Add subject
     const handleAddSubject = () => {
         setEditingSubject(null);
 
@@ -182,7 +173,7 @@ const Subjects = () => {
         setShowForm(true);
     };
 
-    // Open edit subject form
+    // Edit subject
     const handleEdit = (subject) => {
         setEditingSubject(subject);
 
@@ -196,7 +187,7 @@ const Subjects = () => {
         setShowForm(true);
     };
 
-    // Handle input changes
+    // Handle form changes
     const handleInputChange = (event) => {
         const { name, value } = event.target;
 
@@ -281,8 +272,8 @@ const Subjects = () => {
         }
     };
 
-    // Delete subject
-    const handleDelete = async (subject) => {
+    // Open delete confirmation
+    const handleDelete = (subject) => {
         const subjectId = getId(subject);
 
         if (!isValidMongoId(subjectId)) {
@@ -290,13 +281,27 @@ const Subjects = () => {
             return;
         }
 
-        const confirmed = window.confirm(
-            `Are you sure you want to delete "${subject.subjectName}"?`
-        );
+        setSubjectToDelete(subject);
+        setShowDeleteModal(true);
+        setDeleteFeedback(null);
+    };
 
-        if (!confirmed) return;
+    // Cancel deletion
+    const handleCancelDelete = () => {
+        if (deleting) return;
+
+        setShowDeleteModal(false);
+        setSubjectToDelete(null);
+    };
+
+    // Confirm deletion
+    const confirmDelete = async () => {
+        if (!subjectToDelete || deleting) return;
+
+        const subjectId = getId(subjectToDelete);
 
         try {
+            setDeleting(true);
             setError('');
             setSuccess('');
 
@@ -305,17 +310,30 @@ const Subjects = () => {
                 config
             );
 
-            setSuccess('Subject deleted successfully!');
+            setShowDeleteModal(false);
+            setSubjectToDelete(null);
 
             await fetchSubjects(selectedExam);
+
+            setDeleteFeedback({
+                type: 'success',
+                message: 'Subject deleted successfully!'
+            });
 
         } catch (err) {
             console.error('Delete subject error:', err.response?.data || err.message);
 
-            setError(
-                err.response?.data?.message ||
-                'Unable to delete subject.'
-            );
+            setShowDeleteModal(false);
+            setSubjectToDelete(null);
+
+            setDeleteFeedback({
+                type: 'error',
+                message: err.response?.data?.message ||
+                    'Unable to delete subject. Please try again.'
+            });
+
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -408,6 +426,7 @@ const Subjects = () => {
             {/* Success message */}
             {success && (
                 <div className="subjects-message success-message">
+                    <CheckCircle2 size={18} />
                     {success}
                 </div>
             )}
@@ -418,9 +437,7 @@ const Subjects = () => {
 
                     <div className="subject-form-header">
                         <h2>
-                            {editingSubject
-                                ? 'Edit Subject'
-                                : 'Add New Subject'}
+                            {editingSubject ? 'Edit Subject' : 'Add New Subject'}
                         </h2>
 
                         <button
@@ -542,16 +559,12 @@ const Subjects = () => {
                                 </div>
 
                                 <div className="subject-card-content">
-
-                                    <h3>
-                                        {subject.subjectName}
-                                    </h3>
+                                    <h3>{subject.subjectName}</h3>
 
                                     <p>
                                         {subject.description ||
                                             'No description added.'}
                                     </p>
-
                                 </div>
 
                                 <div className="subject-card-actions">
@@ -590,6 +603,93 @@ const Subjects = () => {
                 )}
 
             </div>
+
+            {/* Delete confirmation popup */}
+            {showDeleteModal && subjectToDelete && (
+                <div
+                    className="delete-modal-overlay"
+                    onClick={handleCancelDelete}
+                >
+                    <div
+                        className="delete-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="delete-modal-title"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <div className="delete-modal-icon">
+                            <AlertTriangle size={30} />
+                        </div>
+
+                        <h2 id="delete-modal-title">
+                            Delete Subject?
+                        </h2>
+
+                        <p>
+                            Are you sure you want to delete
+                            {' '}
+                            <strong>{subjectToDelete.subjectName}</strong>?
+                            {' '}
+                            This action cannot be undone.
+                        </p>
+
+                        <div className="delete-modal-actions">
+                            <button
+                                className="delete-cancel-btn"
+                                onClick={handleCancelDelete}
+                                disabled={deleting}
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                className="delete-confirm-btn"
+                                onClick={confirmDelete}
+                                disabled={deleting}
+                            >
+                                {deleting ? 'Deleting...' : 'Yes, Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete success/error popup */}
+            {deleteFeedback && (
+                <div
+                    className="delete-modal-overlay"
+                    onClick={() => setDeleteFeedback(null)}
+                >
+                    <div
+                        className={`delete-feedback-modal ${deleteFeedback.type}`}
+                        role="alertdialog"
+                        aria-modal="true"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <div className={`feedback-icon ${deleteFeedback.type}`}>
+                            {deleteFeedback.type === 'success'
+                                ? <CheckCircle2 size={32} />
+                                : <AlertCircle size={32} />
+                            }
+                        </div>
+
+                        <h2>
+                            {deleteFeedback.type === 'success'
+                                ? 'Successfully Deleted!'
+                                : 'Deletion Failed'}
+                        </h2>
+
+                        <p>{deleteFeedback.message}</p>
+
+                        <button
+                            className="feedback-ok-btn"
+                            onClick={() => setDeleteFeedback(null)}
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
