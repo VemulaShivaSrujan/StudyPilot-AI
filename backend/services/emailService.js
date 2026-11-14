@@ -1,37 +1,46 @@
 
-import nodemailer from 'nodemailer';
-
 export const sendEmail = async (to, subject, html) => {
-
+    const apiKey = process.env.BREVO_API_KEY;
     const emailUser = process.env.EMAIL_USER;
-    const emailPass = process.env.EMAIL_PASS;
 
-    if (!emailUser || !emailPass) {
-        throw new Error('Email credentials are missing in .env');
+    if (!apiKey) {
+        throw new Error('BREVO_API_KEY is missing in environment variables');
     }
 
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-            user: emailUser,
-            pass: emailPass
-        },
-        connectionTimeout: 20000,
-        greetingTimeout: 20000,
-        socketTimeout: 30000
-    });
-
-    const mailOptions = {
-        from: `"StudyPilot AI" <${emailUser}>`,
-        to,
-        subject,
-        html
-    };
+    if (!emailUser) {
+        throw new Error('EMAIL_USER is missing in environment variables');
+    }
 
     try {
-        const result = await transporter.sendMail(mailOptions);
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'api-key': apiKey,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                sender: {
+                    name: 'StudyPilot AI',
+                    email: emailUser
+                },
+                to: [
+                    {
+                        email: to
+                    }
+                ],
+                subject: subject,
+                htmlContent: html
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.message || 'Brevo email sending failed'
+            );
+        }
 
         console.log('Email sent successfully:', result.messageId);
 
