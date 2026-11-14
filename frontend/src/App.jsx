@@ -27,6 +27,7 @@ import Preferences from './pages/Preferences';
 import Timetable from './pages/Timetable';
 import AILearning from './pages/AILearning';
 import Progress from './pages/Progress';
+import Recommendations from './pages/Recommendations';
 
 function AIAssistant() {
     return <AILearning />;
@@ -122,6 +123,11 @@ function App() {
                             <Route
                                 path="/progress"
                                 element={<Progress />}
+                            />
+
+                            <Route
+                                    path="/recommendations"
+                                    element={<Recommendations />}
                             />
 
                             <Route

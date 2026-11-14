@@ -212,6 +212,80 @@
     transition: width 0.4s ease;
 }
 
+
+/* ================================
+   SMART STUDY RECOMMENDATIONS
+================================ */
+
+.dashboard-recommendations-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    padding: 25px;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #ffffff, #f5f3ff);
+    border: 1px solid #ddd6fe;
+    border-radius: 15px;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.035);
+}
+
+.dashboard-recommendations-content {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    min-width: 0;
+}
+
+.dashboard-recommendations-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 55px;
+    height: 55px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 14px;
+}
+
+.dashboard-recommendations-content h2 {
+    margin: 0 0 8px;
+    color: #172554;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.dashboard-recommendations-content p {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.dashboard-recommendations-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    flex-shrink: 0;
+    padding: 12px 17px;
+    color: #ffffff;
+    background: #4f46e5;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+.dashboard-recommendations-button:hover {
+    color: #ffffff;
+    background: #4338ca;
+    transform: translateY(-2px);
+}
+
+
 /* ================================
    DASHBOARD SECTIONS
 ================================ */
@@ -536,6 +610,17 @@
     }
 
     .dashboard-button {
+        width: 100%;
+    }
+
+    .dashboard-recommendations-card {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 18px;
+        padding: 19px;
+    }
+
+    .dashboard-recommendations-button {
         width: 100%;
     }
 }

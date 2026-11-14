@@ -11,7 +11,8 @@ import {
     Circle,
     Loader2,
     AlertCircle,
-    RefreshCw
+    RefreshCw,
+    Sparkles
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -272,6 +273,31 @@ const Dashboard = () => {
                         style={{ width: `${studyProgress}%` }}
                     />
                 </div>
+            </div>
+
+            {/* Smart Study Recommendations */}
+            <div className="dashboard-recommendations-card">
+                <div className="dashboard-recommendations-content">
+                    <div className="dashboard-recommendations-icon">
+                        <Sparkles size={25} />
+                    </div>
+
+                    <div>
+                        <h2>Smart Study Recommendations</h2>
+                        <p>
+                            Discover which topics you should study next based on
+                            your performance, weak areas, and upcoming examinations.
+                        </p>
+                    </div>
+                </div>
+
+                <Link
+                    to="/recommendations"
+                    className="dashboard-recommendations-button"
+                >
+                    View Recommendations
+                    <ArrowRight size={17} />
+                </Link>
             </div>
 
             {/* Dashboard Sections */}
