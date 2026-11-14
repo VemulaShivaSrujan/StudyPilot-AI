@@ -25,14 +25,13 @@ import Subjects from './pages/Subjects';
 import Topics from './pages/Topics';
 import Preferences from './pages/Preferences';
 import Timetable from './pages/Timetable';
+import AILearning from './pages/AILearning';
+import Progress from './pages/Progress';
 
 function AIAssistant() {
-    return <h1>AI Study Assistant</h1>;
+    return <AILearning />;
 }
 
-function Progress() {
-    return <h1>My Progress</h1>;
-}
 
 function RootRedirect() {
     const { isAuthenticated, loading } = useAuth();

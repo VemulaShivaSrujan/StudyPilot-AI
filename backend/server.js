@@ -15,6 +15,8 @@ import preferenceRoutes from './routes/preferenceRoutes.js';
 import timetableRoutes from './routes/timetableRoutes.js';
 import topicTestRoutes from './routes/topicTestRoutes.js';
 import chatRoutes from './routes/chatRoutes.js';
+import learningRoutes from './routes/learningRoutes.js';
+import progressRoutes from './routes/progressRoutes.js';
 
 dotenv.config();
 
@@ -37,6 +39,11 @@ app.use('/api/topic-tests', topicTestRoutes);
 
 // Chat assistant routes
 app.use('/api/chat', chatRoutes);
+
+// AI Learning workspace routes
+app.use('/api/learning', learningRoutes);
+
+app.use('/api/progress', progressRoutes);
 
 app.get('/', (req, res) => {
     res.status(200).json({

@@ -80,3 +80,15 @@ export const findTopicTestsByTopic = async (
         .sort({ createdAt: -1 })
         .toArray();
 };
+
+export const findTopicTestsByStudentId = async (studentId) => {
+    const db = getDB();
+
+    return await db.collection(COLLECTION)
+        .find({
+            studentId: new ObjectId(studentId),
+            completed: true
+        })
+        .sort({ submittedAt: -1 })
+        .toArray();
+};

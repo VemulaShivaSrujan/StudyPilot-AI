@@ -177,150 +177,85 @@ export const generateTopicQuiz = async ({
         const apiKey = process.env.GEMINI_API_KEY;
 
         if (!apiKey) {
-            throw new Error(
-                'GEMINI_API_KEY is missing. Check your backend .env file.'
-            );
+            throw new Error('GEMINI_API_KEY is missing.');
         }
 
-        const ai = new GoogleGenAI({ apiKey });
-
-        if (!topicName || !topicDescription || !extractedText) {
-            throw new Error(
-                'Topic information and PDF study material are required.'
-            );
+        if (!topicName || !extractedText || extractedText.trim().length < 50) {
+            throw new Error('Valid topic information and PDF content are required.');
         }
 
-        if (extractedText.trim().length < 50) {
-            throw new Error(
-                'Not enough PDF content to generate a quiz.'
-            );
-        }
+        const ai = new GoogleGenAI({
+            apiKey,
+            httpOptions: {
+                timeout: 60000,
+                retryOptions: {
+                    attempts: 1
+                }
+            }
+        });
 
-        const documentText = extractedText.slice(0, 100000);
+        const documentText = extractedText.slice(0, 10000);
 
         const prompt = `
-You are an expert educational examination creator.
+You are StudyPilot AI, an educational quiz creator.
 
-Create exactly 10 multiple-choice questions for the following topic.
+Create exactly 5 medium-difficulty multiple-choice questions.
 
-TOPIC:
-${topicName}
+Topic: ${topicName}
 
-TOPIC DESCRIPTION:
-${topicDescription}
+Description: ${topicDescription || 'Not provided'}
 
-STUDY MATERIAL:
+Study material:
 ${documentText}
 
-RULES:
-
-1. Generate exactly 10 questions.
-2. Every question must have exactly 4 options.
-3. Only one option must be correct.
-4. Questions must be medium difficulty.
-5. Questions must test understanding and knowledge.
-6. Include conceptual and application-based questions.
-7. Questions must be relevant to the selected topic.
-8. Use the PDF content as the primary source.
-9. Do not invent facts that are not supported by the PDF.
-10. Avoid duplicate or very similar questions.
-11. correctAnswer must be the zero-based index of the correct option.
-12. Provide a clear explanation for each correct answer.
-13. Do not reveal the correct answer in the question text.
+Rules:
+- Generate exactly 5 questions.
+- Each question must have exactly 4 options.
+- Only one option must be correct.
+- Include conceptual and application-based questions.
+- Use the supplied study material as the primary source.
+- Avoid duplicate questions.
+- correctAnswer must be the zero-based index (0-3).
+- Include an explanation for each answer.
 
 Return only valid JSON matching the requested schema.
 `;
 
-        let response;
-        let lastError;
+        console.log('Starting Gemini quiz generation...');
 
-        for (let attempt = 1; attempt <= 3; attempt++) {
-            try {
-                console.log(
-                    `Gemini quiz generation attempt ${attempt}/3`
-                );
-
-                response = await ai.models.generateContent({
-                    model: 'gemini-3.8-flash',
-                    contents: prompt,
-                    config: {
-                        thinkingConfig: {
-                            thinkingLevel: 'low'
+        const response = await ai.models.generateContent({
+            model: 'gemini-3.5-flash-lite',
+            contents: prompt,
+            config: {
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: 'ARRAY',
+                    items: {
+                        type: 'OBJECT',
+                        properties: {
+                            question: { type: 'STRING' },
+                            options: {
+                                type: 'ARRAY',
+                                items: { type: 'STRING' }
+                            },
+                            correctAnswer: { type: 'INTEGER' },
+                            explanation: { type: 'STRING' }
                         },
-                        responseMimeType: 'application/json',
-                        responseSchema: {
-                            type: 'ARRAY',
-                            items: {
-                                type: 'OBJECT',
-                                properties: {
-                                    question: {
-                                        type: 'STRING'
-                                    },
-                                    options: {
-                                        type: 'ARRAY',
-                                        items: {
-                                            type: 'STRING'
-                                        }
-                                    },
-                                    correctAnswer: {
-                                        type: 'INTEGER'
-                                    },
-                                    explanation: {
-                                        type: 'STRING'
-                                    }
-                                },
-                                required: [
-                                    'question',
-                                    'options',
-                                    'correctAnswer',
-                                    'explanation'
-                                ]
-                            }
-                        }
+                        required: [
+                            'question',
+                            'options',
+                            'correctAnswer',
+                            'explanation'
+                        ]
                     }
-                });
-
-                break;
-
-            } catch (error) {
-                lastError = error;
-
-                console.error(
-                    `Gemini quiz attempt ${attempt} failed:`,
-                    error.message
-                );
-
-                if (attempt === 3) {
-                    throw error;
                 }
-
-                const delay = attempt * 3000;
-
-                console.log(
-                    `Retrying quiz generation in ${delay / 1000} seconds...`
-                );
-
-                await new Promise(resolve =>
-                    setTimeout(resolve, delay)
-                );
             }
-        }
-
-        if (!response) {
-            throw lastError || new Error(
-                'Gemini quiz generation failed.'
-            );
-        }
+        });
 
         const questions = JSON.parse(response.text);
 
-        if (
-            !Array.isArray(questions) ||
-            questions.length !== 10
-        ) {
-            throw new Error(
-                'Gemini did not generate exactly 10 questions.'
-            );
+        if (!Array.isArray(questions) || questions.length !== 5) {
+            throw new Error('Gemini did not generate exactly 5 questions.');
         }
 
         for (const question of questions) {
@@ -329,10 +264,8 @@ Return only valid JSON matching the requested schema.
                 !question.question.trim() ||
                 !Array.isArray(question.options) ||
                 question.options.length !== 4 ||
-                question.options.some(
-                    option =>
-                        typeof option !== 'string' ||
-                        !option.trim()
+                question.options.some(option =>
+                    typeof option !== 'string' || !option.trim()
                 ) ||
                 !Number.isInteger(question.correctAnswer) ||
                 question.correctAnswer < 0 ||
@@ -340,24 +273,16 @@ Return only valid JSON matching the requested schema.
                 typeof question.explanation !== 'string' ||
                 !question.explanation.trim()
             ) {
-                throw new Error(
-                    'Gemini generated an invalid quiz question.'
-                );
+                throw new Error('Gemini generated an invalid quiz question.');
             }
         }
 
-        console.log(
-            `Successfully generated ${questions.length} quiz questions for ${topicName}.`
-        );
+        console.log(`Successfully generated ${questions.length} quiz questions.`);
 
         return questions;
 
     } catch (error) {
-        console.error(
-            'Gemini quiz generation error:',
-            error.message
-        );
-
+        console.error('Gemini quiz generation error:', error.message);
         throw error;
     }
 };
@@ -452,6 +377,126 @@ clearly explain that instead of making up a schedule.
     } catch (error) {
         console.error(
             'Gemini chatbot error:',
+            error.message
+        );
+
+        throw error;
+    }
+};
+
+
+// ==========================================
+// GENERATE AI LEARNING CONTENT
+// ==========================================
+
+export const generateLearningContent = async ({
+    topic,
+    mode
+}) => {
+    try {
+        const apiKey = process.env.GEMINI_API_KEY;
+
+        if (!apiKey) {
+            throw new Error('GEMINI_API_KEY is missing.');
+        }
+
+        if (!topic || !topic.trim()) {
+            throw new Error('Please provide a topic.');
+        }
+
+        const learningPrompts = {
+            explain: `
+Explain "${topic}" to a student in simple language.
+
+Include:
+1. Introduction
+2. Important concepts
+3. Step-by-step explanation
+4. Practical examples
+5. Real-world applications
+6. Key points to remember
+`,
+
+            notes: `
+Generate detailed and well-organized study notes about "${topic}".
+
+Include:
+1. Topic introduction
+2. Important definitions
+3. Main concepts
+4. Detailed explanations
+5. Examples
+6. Important points for exams
+7. Quick revision notes
+`,
+
+            summary: `
+Create a concise study summary about "${topic}".
+
+Include:
+1. Overview
+2. Main concepts
+3. Important definitions
+4. Key takeaways
+5. Quick revision points
+
+Keep the summary easy to understand.
+`,
+
+            questions: `
+Generate 10 practice questions about "${topic}".
+
+Include:
+1. A mixture of conceptual and application-based questions.
+2. Different difficulty levels.
+3. Four options for each question.
+4. The correct answer.
+5. A short explanation.
+
+Present the questions in a clear format.
+`
+        };
+
+        if (!learningPrompts[mode]) {
+            throw new Error('Invalid learning mode.');
+        }
+
+        const ai = new GoogleGenAI({ apiKey });
+
+        const prompt = `
+You are StudyPilot AI, an expert educational tutor.
+
+Your task is to help students learn effectively.
+
+${learningPrompts[mode]}
+
+IMPORTANT RULES:
+- Use clear and simple language.
+- Organize the response with headings.
+- Use examples wherever useful.
+- Avoid unnecessary repetition.
+- Make the response educational and accurate.
+- Format the response using Markdown.
+
+Return only the learning content.
+`;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-3.5-flash-lite',
+            contents: prompt
+        });
+
+        const content = response.text;
+
+        if (!content || !content.trim()) {
+            throw new Error('AI returned an empty learning response.');
+        }
+
+        return content.trim();
+
+    } catch (error) {
+        console.error(
+            'Gemini learning generation error:',
             error.message
         );
 
